@@ -1,0 +1,15 @@
+###
+#
+# GITIGNORE
+#
+# We ignore all ./*.IMAGETYPE
+# But not images/ (so we can show examples)
+#
+###
+
+./*.png
+./*.jp[e]g
+./*.tiff
+
+!./images/*
+
