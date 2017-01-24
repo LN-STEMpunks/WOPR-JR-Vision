@@ -14,8 +14,8 @@ class GripPipeline:
         """initializes all values to presets or None if need to be set
         """
 
-        self.__resize_image_width = 320.0
-        self.__resize_image_height = 240.0
+        self.__resize_image_width = 160.0
+        self.__resize_image_height = 120.0
         self.__resize_image_interpolation = cv2.INTER_CUBIC
 
         self.resize_image_output = None
@@ -213,7 +213,7 @@ class GripPipeline:
 
 
 # Camera 0 is the integrated web cam on my netbook
-camera_port = 0
+camera_port = 1
  
 #Number of frames to throw away while the camera adjusts to light levels
 ramp_frames = 30
@@ -255,7 +255,7 @@ while True:
 
     cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:2]
 
-    outputim = cv2.resize(camera_capture, (320, 240), 0, 0, cv2.INTER_CUBIC)
+    outputim = cv2.resize(camera_capture, (160, 120), 0, 0, cv2.INTER_CUBIC)
 
     centres = []
     for i in range(len(cnts)):
