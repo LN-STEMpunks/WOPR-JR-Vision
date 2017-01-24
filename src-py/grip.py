@@ -1,7 +1,12 @@
 import cv2
 import numpy
 import math
+import argparse
 from enum import Enum
+
+parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
+parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
+args = parser.parse_args()
 
 BlurType = Enum('BlurType', 'Box_Blur Gaussian_Blur Median_Filter Bilateral_Filter')
 
@@ -14,7 +19,7 @@ class GripPipeline:
         """initializes all values to presets or None if need to be set
         """
 
-        self.__resize_image_width = 160.0
+        self.__resize_image_width = 160.0 
         self.__resize_image_height = 120.0
         self.__resize_image_interpolation = cv2.INTER_CUBIC
 
@@ -27,9 +32,9 @@ class GripPipeline:
         self.blur_output = None
 
         self.__hsl_threshold_input = self.blur_output
-        self.__hsl_threshold_hue = [79.31654676258992, 95.95165229470125]
-        self.__hsl_threshold_saturation = [147.5238554098887, 252.44287303969847]
-        self.__hsl_threshold_luminance = [33.65983518720221, 183.1996587030717]
+        self.__hsl_threshold_hue = [59.31654676258992, 97.95165229470125]
+        self.__hsl_threshold_saturation = [60.5238554098887, 166.44287303969847]
+        self.__hsl_threshold_luminance = [125.65983518720221, 189.1996587030717]
 
         self.hsl_threshold_output = None
 
@@ -39,11 +44,11 @@ class GripPipeline:
         self.find_contours_output = None
 
         self.__filter_contours_contours = self.find_contours_output
-        self.__filter_contours_min_area = 100.0
+        self.__filter_contours_min_area = 1.0
         self.__filter_contours_min_perimeter = 0.0
-        self.__filter_contours_min_width = 0.0
+        self.__filter_contours_min_width = 1.0
         self.__filter_contours_max_width = 1000.0
-        self.__filter_contours_min_height = 0.0
+        self.__filter_contours_min_height = 1.0
         self.__filter_contours_max_height = 1000.0
         self.__filter_contours_solidity = [0, 100]
         self.__filter_contours_max_vertices = 1000000.0
@@ -213,14 +218,14 @@ class GripPipeline:
 
 
 # Camera 0 is the integrated web cam on my netbook
-camera_port = 0
+
  
 #Number of frames to throw away while the camera adjusts to light levels
 ramp_frames = 10
  
 # Now we can initialize the camera capture object with the cv2.VideoCapture class.
 # All it needs is the index to a camera port.
-camera = cv2.VideoCapture(camera_port)
+camera = cv2.VideoCapture(args.camera)
  
 # Captures a single image from the camera and returns it in PIL format
 def get_image():
