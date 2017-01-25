@@ -1,10 +1,16 @@
 
+// system libraries
+#include <chrono>
+#include <cmath>
+
 #include <cv.h>
 #include <highgui.h>
 #include "opencv2/gpu/gpu.hpp"
 
-#include <chrono>
-#include <cmath>
+// our argument parser
+#include "argparse.h"
+
+
 
 using namespace std;
 using namespace std::chrono;
@@ -46,7 +52,7 @@ void process(cv::Mat& source0, vector<vector<cv::Point>>& contours) {
 
 int main(int argc, char *argv[]) {
 	cout << "Welcome to WOPR-JR-Vision" << endl;
-	cout<<cv::gpu::getCudaEnabledDeviceCount()<<endl;
+	//cout<<cv::gpu::getCudaEnabledDeviceCount()<<endl;
 
 	cv::Mat img, toshow;
         vector<vector<cv::Point>> contours;
