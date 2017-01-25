@@ -9,7 +9,7 @@ using namespace std;
 using namespace std::chrono;
 
 
-int camera_port = 0;
+int camera_port = 1;
 
 int scaleFactor = 1;
 
