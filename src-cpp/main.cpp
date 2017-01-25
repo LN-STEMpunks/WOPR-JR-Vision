@@ -63,8 +63,11 @@ int main(int argc, char *argv[]) {
 	cv::Mat img, toshow;
     vector<vector<cv::Point>> contours;
 	cv::VideoCapture camera(camera_port);
-	//camera.set(CV_CAP_PROP_FRAME_WIDTH, size.width);
-	//camera.set(CV_CAP_PROP_FRAME_HEIGHT, size.height);
+
+	camera.set(CV_CAP_PROP_FRAME_WIDTH, size.width);
+	camera.set(CV_CAP_PROP_FRAME_HEIGHT, size.height);
+	camera.set(CV_CAP_PROP_EXPOSURE, 0.01); 
+	camera.set(CV_CAP_PROP_GAIN, 0.9); 
 
 
 	high_resolution_clock::time_point st, et;
