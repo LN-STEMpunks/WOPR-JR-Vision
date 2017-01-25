@@ -39,7 +39,7 @@ void twoLargestContours(vector<vector<cv::Point>> contours, int& a, int& b) {
 			idx2 = i;
 		}
 	}
-	a = area1; b = area2;
+	a = idx1; b = idx2;
 }
 
 cv::Point2f findContourCenter(vector<cv::Point> contour) {
