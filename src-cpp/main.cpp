@@ -9,7 +9,7 @@ using namespace std;
 using namespace std::chrono;
 
 
-int camera_port = 1;
+int camera_port = 0;
 
 int scaleFactor = 1;
 
@@ -64,8 +64,8 @@ int main(int argc, char *argv[]) {
 	cv::Mat img, toshow;
     vector<vector<cv::Point>> contours;
 	cv::VideoCapture camera(camera_port);
-	camera.set(CV_CAP_PROP_FRAME_WIDTH, size.width);
-	camera.set(CV_CAP_PROP_FRAME_HEIGHT, size.height);
+	//camera.set(CV_CAP_PROP_FRAME_WIDTH, size.width);
+	//camera.set(CV_CAP_PROP_FRAME_HEIGHT, size.height);
 
 
 	high_resolution_clock::time_point st, et;
