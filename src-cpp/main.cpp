@@ -27,7 +27,7 @@ void twoLargestContours(vector<vector<cv::Point>> contours, int& a, int& b) {
 	int idx1 = 0, idx2 = 0, area1 = -1, area2 = -1;
 	double areai;
 	for (int i = 0; i < contours.size(); ++i) {
-		areai = cv::contourArea(i);
+		areai = cv::contourArea(contours[i]);
 		if (areai > area1) {
 			area2 = area1;
 			idx2 = idx1;
@@ -43,7 +43,6 @@ void twoLargestContours(vector<vector<cv::Point>> contours, int& a, int& b) {
 }
 
 cv::Point2f findContourCenter(vector<cv::Point> contour) {
-	
 	cv::Moments mu = cv::moments( contour, false ); 
 	return cv::Point2f( mu.m10/mu.m00 , mu.m01/mu.m00 );
 }
