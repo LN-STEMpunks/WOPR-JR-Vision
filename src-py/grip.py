@@ -29,7 +29,7 @@ def process(source0):
 	source0 = cv2.cvtColor(source0, cv2.COLOR_BGR2HLS)
 	source0 = cv2.inRange(source0, (hueMin, lumMin, satMin),  (hueMax, lumMax, satMax))
 	
-	contours, hier = cv2.findContours(source0, mode=cv2.RETR_EXTERNAL, method=cv2.CV_CHAIN_APPROX_SIMPLE)
+	contours, hier = cv2.findContours(source0, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 	return contours
 
 camera = cv2.VideoCapture(args.camera)
