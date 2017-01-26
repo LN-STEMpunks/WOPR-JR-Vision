@@ -27,7 +27,7 @@ def process(source0):
 	source0 = cv2.cvtColor(source0, cv2.COLOR_BGR2HLS)
 	source0 = cv2.inRange(source0, (hueMin, lumMin, satMin),  (hueMax, lumMax, satMax))
 	
-	source0, contours = cv2.findContours(source0, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
+	contours = cv2.findContours(source0, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_SIMPLE)
 	print contours
 	return contours
 
@@ -62,14 +62,14 @@ while True:
 
     #outputim = cv2.resize(camera_capture, (160, 120), 0, 0, cv2.INTER_CUBIC)
 
-    centres = []
-    for i in range(len(cnts)):
-        moments = cv2.moments(cnts[i])
-        centres.append((int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00'])))
-        cv2.circle(outputim, centres[-1], 3, (255, 0, 0), -1)
+    #centres = []
+    #for i in range(len(cnts)):
+    #    moments = cv2.moments(cnts[i])
+    #    centres.append((int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00'])))
+    #    cv2.circle(outputim, centres[-1], 3, (255, 0, 0), -1)
 
 
-    cv2.drawContours(outputim,cnts,-1,(0,255,0),3)
+    #cv2.drawContours(outputim,cnts,-1,(0,255,0),3)
     #cv2.imwrite(file, outputim)
     cv2.imshow('img', outputim)
 	

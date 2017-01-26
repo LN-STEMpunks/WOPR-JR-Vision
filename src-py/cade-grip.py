@@ -27,8 +27,9 @@ def process(source0):
 	source0 = cv2.cvtColor(source0, cv2.COLOR_BGR2HLS)
 	source0 = cv2.inRange(source0, (hueMin, lumMin, satMin),  (hueMax, lumMax, satMax))
 	
-	source0, contours = cv2.findContours(source0, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
+	contours, hier = cv2.findContours(source0, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 	print contours
+	print hier
 	return contours
 
 
@@ -77,7 +78,7 @@ while True:
 	
     et = time.time()
 
-    print ("FPS: %f" % (1.0 / (et - st)))
+    #print ("FPS: %f" % (1.0 / (et - st)))
     sys.stdout.flush()
 
     k = cv2.waitKey(1)
