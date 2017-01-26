@@ -47,7 +47,7 @@ import time
 
 while True:
     st = time.time()
-	
+
     camera_capture = get_image()
     outputim = camera_capture.copy()
 
@@ -59,8 +59,8 @@ while True:
     centres = []
     if len(cnts) >= 2:
     	cnts = sorted(cnts, key = cv2.contourArea, reverse = True)
-        cv2.drawContours(outputim,cnts,-1,(0,0,255),3)
-        cv2.drawContours(outputim,cnts,-2,(0,0,255),3)
+        cv2.drawContours(outputim,cnts,-1,(255,0,0))
+        cv2.drawContours(outputim,cnts,-2,(255,0,0))
 
 	
     #cv2.imwrite(file, outputim)
