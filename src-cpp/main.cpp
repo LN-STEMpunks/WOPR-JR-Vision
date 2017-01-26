@@ -14,8 +14,7 @@ int camera_port = 0;
 
 int scaleFactor = 4;
 
-cv::Size size(80*scaleFactor, 60*scaleFactor),
-		 blur(4, 4);
+cv::Size blur(4, 4);
 
 double hueMin = 73.26,
 	   hueMax = 120.20,
@@ -65,7 +64,7 @@ int main(int argc, char *argv[]) {
         vector<vector<cv::Point>> contours;
 	cv::VideoCapture camera(camera_port);
 
-        camera.set(CV_CAP_PROP_AUTO_EXPOSURE, 0);
+    camera.set(CV_CAP_PROP_AUTO_EXPOSURE, 0);
 	camera.set(CV_CAP_PROP_EXPOSURE, 1.0); 
 	//camera.set(CV_CAP_PROP_GAIN, 0.9); 
 
