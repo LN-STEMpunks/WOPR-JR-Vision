@@ -11,17 +11,17 @@ using namespace std::chrono;
 
 int camera_port = 0;
 
-int scaleFactor = 1;
+int scaleFactor = 4;
 
-cv::Size size(160*scaleFactor, 120*scaleFactor),
+cv::Size size(80*scaleFactor, 60*scaleFactor),
 		 blur(4, 4);
 
 double hueMin = 73.26,
-	   hueMax = 94.20,
-	   satMin = 64.09,
+	   hueMax = 120.20,
+	   satMin = 95.09,
 	   satMax = 165.78,
-	   lumMin = 140.62,
-	   lumMax = 221.48;
+	   lumMin = 100.62,
+	   lumMax = 320.48;
 
 void twoLargestContours(vector<vector<cv::Point>> contours, int& a, int& b) {
 	int idx1 = 0, idx2 = 0, area1 = -1, area2 = -1;
@@ -53,22 +53,23 @@ void process(cv::Mat& source0, vector<vector<cv::Point>>& contours) {
 	
 	cv::cvtColor(source0, source0, CV_BGR2HLS);
 	cv::inRange(source0, cv::Scalar(hueMin, lumMin, satMin), cv::Scalar(hueMax, lumMax, satMax), source0);
-	cv::findContours( source0, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+	cv::findContours( source0, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_KCOS);
 	
 }
 
 int main(int argc, char *argv[]) {
 	cout << "Welcome to WOPR-JR-Vision" << endl;
-
+	printf ("OpenCV version: %d, %d\n", CV_MAJOR_VERSION, CV_MINOR_VERSION);
 	cv::Mat img, toshow;
-    vector<vector<cv::Point>> contours;
+        vector<vector<cv::Point>> contours;
 	cv::VideoCapture camera(camera_port);
 
-	camera.set(CV_CAP_PROP_FRAME_WIDTH, size.width);
-	camera.set(CV_CAP_PROP_FRAME_HEIGHT, size.height);
-	camera.set(CV_CAP_PROP_EXPOSURE, 0.01); 
-	camera.set(CV_CAP_PROP_GAIN, 0.9); 
+        camera.set(CV_CAP_PROP_AUTO_EXPOSURE, 0);
+	camera.set(CV_CAP_PROP_EXPOSURE, 1.0); 
+	//camera.set(CV_CAP_PROP_GAIN, 0.9); 
 
+
+	cout << "Camera Exposure: " << camera.get(CV_CAP_PROP_EXPOSURE) << endl;
 
 	high_resolution_clock::time_point st, et;
 
@@ -80,7 +81,7 @@ int main(int argc, char *argv[]) {
 		st = high_resolution_clock::now();
 		camera >> img;
 
-		//cv::resize(img, img, size);
+		cv::resize(img, img, size);
 		toshow = img.clone();
 		process(img, contours);
 		
@@ -103,7 +104,7 @@ int main(int argc, char *argv[]) {
 		
 		cv::waitKey(1);
 		et = high_resolution_clock::now();
-		cout << pow(10.0, 6) / (duration_cast<microseconds>(et -st).count()) << "\r";
+		cout << "FPS: " << pow(10.0, 6) / (duration_cast<microseconds>(et -st).count()) << "\r";
 		fflush(stdout);
 	}
 
