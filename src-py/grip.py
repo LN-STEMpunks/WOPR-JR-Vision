@@ -36,8 +36,8 @@ def process(source0):
 # All it needs is the index to a camera port.
 camera = cv2.VideoCapture(args.camera)
 
-camera.set(3,80)
-camera.set(4,60)
+camera.set(3,160)
+camera.set(4,120)
  
 # Captures a single image from the camera and returns it in PIL format
 def get_image():
@@ -56,10 +56,11 @@ while True:
     outputim = camera_capture.copy()
 
     cnts = process(camera_capture)
+
     if cnts is None:
         cnts = []
 
-    cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:2]
+    cnts = sorted(cnts, key = cv2.contourArea, reverse = True)
 
     #outputim = cv2.resize(camera_capture, (160, 120), 0, 0, cv2.INTER_CUBIC)
 
