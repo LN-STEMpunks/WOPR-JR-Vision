@@ -99,8 +99,8 @@ class GripPipeline:
         Returns:
             A numpy.ndarray of the new size.
         """
-        return cv2.resize(input, (
-(int)(width), (int)(height)), 0, 0, interpolation)
+	return input
+        #return cv2.resize(input, ((int)(width), (int)(height)), 0, 0, interpolation)
 
     @staticmethod
     def __blur(src, type, radius):
@@ -226,6 +226,9 @@ ramp_frames = 10
 # Now we can initialize the camera capture object with the cv2.VideoCapture class.
 # All it needs is the index to a camera port.
 camera = cv2.VideoCapture(args.camera)
+
+camera.set(3,160)
+camera.set(4,120)
  
 # Captures a single image from the camera and returns it in PIL format
 def get_image():
@@ -260,7 +263,9 @@ while True:
 
     cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:2]
 
-    outputim = cv2.resize(camera_capture, (160, 120), 0, 0, cv2.INTER_CUBIC)
+    outputim = camera_capture
+
+    #outputim = cv2.resize(camera_capture, (160, 120), 0, 0, cv2.INTER_CUBIC)
 
     centres = []
     for i in range(len(cnts)):
