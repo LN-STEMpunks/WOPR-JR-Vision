@@ -29,7 +29,6 @@ def process(source0):
 	
 	contours, hier = cv2.findContours(source0, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 	print contours
-	print hier
 	return contours
 
 
