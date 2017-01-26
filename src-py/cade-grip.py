@@ -57,6 +57,8 @@ while True:
     outputim = camera_capture
 
     cnts = process(camera_capture)
+    if cnts is None:
+        cnts = []
 
     cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:2]
 
