@@ -14,7 +14,8 @@ int camera_port = 0;
 
 int scaleFactor = 4;
 
-cv::Size blur(4, 4);
+cv::Size size(160, 120),
+         blur(4, 4);
 
 double hueMin = 73.26,
 	   hueMax = 120.20,
