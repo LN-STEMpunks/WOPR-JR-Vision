@@ -3,6 +3,7 @@ import numpy
 import math
 import argparse
 from enum import Enum
+import sys
 
 parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
 parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
@@ -256,8 +257,12 @@ file = "./image.png"
 
 pipeline = GripPipeline()
 
+st, et = 0, 0
+
+import time
 
 while True:
+    st = time.time()
     camera_capture = get_image()
     cnts = pipeline.process(camera_capture)
 
@@ -273,13 +278,17 @@ while True:
         centres.append((int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00'])))
         cv2.circle(outputim, centres[-1], 3, (255, 0, 0), -1)
 
-    print centres
 
     cv2.drawContours(outputim,cnts,-1,(0,255,0),3)
     #cv2.imwrite(file, outputim)
     cv2.imshow('img', outputim)
+	
+    et = time.time()
 
-    k = cv2.waitKey(33)
+    print ("FPS: %f" % (1.0 / (et - st)))
+    sys.stdout.flush()
+
+    k = cv2.waitKey(1)
     if k==27:    # Esc key to stop
         break
     elif k==-1:  # normally -1 returned,so don't print it
