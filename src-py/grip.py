@@ -35,42 +35,42 @@ def process(source0):
 camera = cv2.VideoCapture(args.camera)
 
 
-camera.set_exposure_auto(0)
+#camera.set_exposure_auto(0)
 
 camera.set(3,160)
 camera.set(4,120)
 
 def get_image():
-    retval, im = camera.read()
-    return im
+	retval, im = camera.read()
+	return im
 
 st, et = 0, 0
 
 import time
 
 while True:
-    st = time.time()
+	st = time.time()
 
-    camera_capture = get_image()
-    outputim = camera_capture.copy()
+	camera_capture = get_image()
+	outputim = camera_capture.copy()
 
-    cnts = process(camera_capture)
+	cnts = process(camera_capture)
 
-    if cnts is None:
-        cnts = []
+	if cnts is None:
+		cnts = []
 
-    centres = []
-    if len(cnts) >= 2:
-    	cnts = sorted(cnts, key = cv2.contourArea, reverse = True)
-        cv2.drawContours(outputim,cnts,-1,(255,0,0))
-        cv2.drawContours(outputim,cnts,-2,(255,0,0))
+	centres = []
+	if len(cnts) >= 2:
+		cnts = sorted(cnts, key = cv2.contourArea, reverse = True)
+		cv2.drawContours(outputim,cnts,-1,(255,0,0))
+		cv2.drawContours(outputim,cnts,-2,(255,0,0))
 
 	
-    #cv2.imwrite(file, outputim)
-    cv2.imshow('img', outputim)
+	#cv2.imwrite(file, outputim)
+	cv2.imshow('img', outputim)
 
-    k = cv2.waitKey(1)
+	k = cv2.waitKey(1)
 	
-    et = time.time()
-    print ("FPS: %f" % (1.0 / (et - st)))
-    sys.stdout.flush()
+	et = time.time()
+	print ("FPS: %f" % (1.0 / (et - st)))
+	sys.stdout.flush()
