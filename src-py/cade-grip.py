@@ -28,7 +28,6 @@ def process(source0):
 	source0 = cv2.inRange(source0, (hueMin, lumMin, satMin),  (hueMax, lumMax, satMax))
 	
 	contours, hier = cv2.findContours(source0, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
-	print contours
 	return contours
 
 
@@ -54,7 +53,7 @@ import time
 while True:
     st = time.time()
     camera_capture = get_image()
-    outputim = camera_capture
+    outputim = camera_capture.copy()
 
     cnts = process(camera_capture)
     if cnts is None:
