@@ -350,6 +350,10 @@ public:
         return variables_[N].castTo<T>();
     }
 
+    int retrieveint(const String& name) {
+        return strtol(retrieve<std::string>(name).c_str(), NULL, 10);;
+    }
+
     // --------------------------------------------------------------------------
     // Properties
     // --------------------------------------------------------------------------

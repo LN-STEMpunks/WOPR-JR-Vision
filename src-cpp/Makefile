@@ -1,4 +1,4 @@
-OUT=main.out
+OUT=WOPR-JR-Vision.o
 
 BFLAGS=$(shell pkg-config --cflags opencv)
 AFLAGS=$(shell pkg-config --libs opencv)

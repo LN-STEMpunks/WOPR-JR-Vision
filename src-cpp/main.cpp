@@ -1,21 +1,21 @@
 
 
+#include <chrono>
+#include <cmath>
+
 #include "cv.h"
 #include "highgui.h"
 
-#include <chrono>
-#include <cmath>
+#include "argparse.h"
 
 using namespace std;
 using namespace std::chrono;
 
 
-int camera_port = 0;
-
 int scaleFactor = 4;
 
 cv::Size size(160, 120),
-         blur(4, 4);
+		 blur(4, 4);
 
 double hueMin = 73.26,
 	   hueMax = 120.20,
@@ -58,19 +58,39 @@ void process(cv::Mat& source0, vector<vector<cv::Point>>& contours) {
 	
 }
 
-int main(int argc, char *argv[]) {
-	cout << "Welcome to WOPR-JR-Vision" << endl;
+int main(int argc, const char **argv) {
+	ArgumentParser parser;
+
 	printf ("OpenCV version: %d, %d\n", CV_MAJOR_VERSION, CV_MINOR_VERSION);
+
+	parser.appName("WOPR-JR-Vision");
+
+	parser.addArgument("-c", "--camera", 1);
+	parser.addArgument("-w", "--width", 1);
+	parser.addArgument("-h", "--height", 1);
+	parser.addFinalArgument("output", 1, true);
+
+	// parse the command-line arguments - throws if invalid format
+	parser.parse(argc, argv);
+	int camera_port;
+
+	if (parser.count("camera")) {
+		 //camera_port = strtol(parser.retrieve<string>("camera").c_str(), NULL, 10);
+		 camera_port = parser.retrieveint("camera");
+	} else {
+		 camera_port = 0;
+	}
+	cout << camera_port << endl;
+
 	cv::Mat img, toshow;
-        vector<vector<cv::Point>> contours;
+	vector<vector<cv::Point>> contours;
 	cv::VideoCapture camera(camera_port);
 
-    camera.set(CV_CAP_PROP_AUTO_EXPOSURE, 0);
-	camera.set(CV_CAP_PROP_EXPOSURE, 1.0); 
-	//camera.set(CV_CAP_PROP_GAIN, 0.9); 
-
-
-	cout << "Camera Exposure: " << camera.get(CV_CAP_PROP_EXPOSURE) << endl;
+	//camera.set(CV_CAP_PROP_FRAME_WIDTH, 160);
+	//camera.set(CV_CAP_PROP_FRAME_HEIGHT, 120);
+	//camera.set(CV_CAP_PROP_AUTO_EXPOSURE, 0);
+	//camera.set(CV_CAP_PROP_EXPOSURE, 0.1); 
+	//camera.set(CV_CAP_PROP_GAIN, 0.01); 
 
 	high_resolution_clock::time_point st, et;
 
@@ -82,7 +102,7 @@ int main(int argc, char *argv[]) {
 		st = high_resolution_clock::now();
 		camera >> img;
 
-		cv::resize(img, img, size);
+		//cv::resize(img, img, size);
 		toshow = img.clone();
 		process(img, contours);
 		
