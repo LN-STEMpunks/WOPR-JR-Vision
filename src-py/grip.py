@@ -34,9 +34,12 @@ def process(source0):
 
 camera = cv2.VideoCapture(args.camera)
 
+
+camera.set_exposure_auto(0)
+
 camera.set(3,160)
 camera.set(4,120)
- 
+
 def get_image():
     retval, im = camera.read()
     return im
