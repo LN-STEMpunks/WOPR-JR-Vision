@@ -64,14 +64,10 @@ while True:
     #outputim = cv2.resize(camera_capture, (160, 120), 0, 0, cv2.INTER_CUBIC)
 
     centres = []
-    for i in range(len(cnts)):
-        moments = cv2.moments(cnts[i])
-        centres.append((int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00'])))
-        cv2.circle(outputim, centres[-1], 3, (255, 0, 0), -1)
+    if len(cnts) >= 2:
+        cv2.drawContours(outputim,cnts,-1,(0,0,255),3)
+        cv2.drawContours(outputim,cnts,-2,(0,0,255),3)
 
-
-    cv2.drawContours(outputim,cnts,-1,(0,0,255),3)
-    cv2.drawContours(outputim,cnts,-2,(0,0, 255),3)
 	
     #cv2.imwrite(file, outputim)
     cv2.imshow('img', outputim)
