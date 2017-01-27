@@ -2,7 +2,6 @@ import cv2
 import numpy
 import math
 import argparse
-from enum import Enum
 import sys
 
 parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
@@ -52,22 +51,20 @@ while True:
 	st = time.time()
 
 	camera_capture = get_image()
-	outputim = camera_capture.copy()
+	#outputim = camera_capture.copy()
 
 	cnts = process(camera_capture)
 
-	if cnts is None:
-		cnts = []
+	#if cnts is None:
+		#cnts = []
 
-	centres = []
-	if len(cnts) >= 2:
-		cnts = sorted(cnts, key = cv2.contourArea, reverse = True)
-		cv2.drawContours(outputim,cnts,-1,(255,0,0))
-		cv2.drawContours(outputim,cnts,-2,(255,0,0))
+	#if len(cnts) >= 2:
+	#	cnts = sorted(cnts, key = cv2.contourArea, reverse = True)
+	#	cv2.drawContours(outputim,cnts,0,(255,0,0))
+	#	cv2.drawContours(outputim,cnts,1,(255,0,0))
 
 	
-	#cv2.imwrite(file, outputim)
-	cv2.imshow('img', outputim)
+	#cv2.imshow('img', outputim)
 
 	k = cv2.waitKey(1)
 	
