@@ -85,6 +85,7 @@ while True:
 	if contours is None:
 		contours = []
 
+	center = [-1, -1]
 	if len(contours) >= 2:
 		contours = [contours[j] for j in twoLargestContours(contours)]
 		centers = [contourCenter(j) for j in contours]
