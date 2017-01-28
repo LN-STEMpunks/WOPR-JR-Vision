@@ -12,11 +12,35 @@ args = parser.parse_args()
 hueMin = 73.26
 hueMax = 120.20
 satMin = 95.09
-satMax = 165.78
-lumMin = 100.62
-lumMax = 320.48
+satMax = 140.78
+lumMin = 100
+lumMax = 250
 
-blur = (4, 4)
+
+# TODO: Test best value
+blur = (6, 6)
+
+def contourCenter(contour):
+	try:
+		mu = cv2.moments(contour, False) 
+		return ( mu["m10"]/mu["m00"] , mu["m01"]/mu["m00"] )
+	except:
+		return (0, 0)
+
+def twoLargestContours(contours):
+	idx1, idx2, area1, area2 = 0, 0, -1, -1
+	for i in range(0, len(contours)):
+		areai = cv2.contourArea(contours[i])
+		if (areai > area1):
+			area2 = area1
+			idx2 = idx1
+
+			area1 = areai
+			idx1 = i
+		elif (areai > area2):
+			area2 = areai
+			idx2 = i
+	return (idx1, idx2)
 
 def process(source0):
 	"""
@@ -36,8 +60,8 @@ camera = cv2.VideoCapture(args.camera)
 
 #camera.set_exposure_auto(0)
 
-camera.set(3,160)
-camera.set(4,120)
+camera.set(3,160*3)
+camera.set(4,120*3)
 
 def get_image():
 	retval, im = camera.read()
@@ -51,20 +75,21 @@ while True:
 	st = time.time()
 
 	camera_capture = get_image()
-	#outputim = camera_capture.copy()
+	outputim = camera_capture.copy()
 
-	cnts = process(camera_capture)
+	contours = process(camera_capture)
 
-	#if cnts is None:
-		#cnts = []
+	if contours is None:
+		contours = []
 
-	#if len(cnts) >= 2:
-	#	cnts = sorted(cnts, key = cv2.contourArea, reverse = True)
-	#	cv2.drawContours(outputim,cnts,0,(255,0,0))
-	#	cv2.drawContours(outputim,cnts,1,(255,0,0))
+	if len(contours) >= 2:
+		contours = [contours[j] for j in twoLargestContours(contours)]
+		cv2.drawContours(outputim,contours,0,(255,0,0), 4)
+		cv2.drawContours(outputim,contours,1,(255,0,0), 4)
+		centers = [contourCenter(j) for j in contours]
+		cv2.circle(outputim, (int((centers[0][0] + centers[1][0])//2), int((centers[0][1] + centers[1][1])//2)), 4, (255, 0, 0), 2)
 
-	
-	#cv2.imshow('img', outputim)
+	cv2.imshow('img', outputim)
 
 	k = cv2.waitKey(1)
 	
