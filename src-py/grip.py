@@ -109,7 +109,7 @@ while True:
 	
 	et = time.time()
 	if args.publish:
-		sd.putNumberArray("GearPeg", center)
+		sd.putString("GearPeg", str(center))
 
 	print ("FPS: %f" % (1.0 / (et - st)))
 	print ("center: (%d, %d)" % (center[0], center[1]))
