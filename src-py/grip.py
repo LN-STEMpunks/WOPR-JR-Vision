@@ -4,11 +4,17 @@ import math
 import argparse
 import sys
 
+
 parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
 parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
-parser.add_argument('-show', '--show', action='store_true', help='camera port')
+parser.add_argument('-show', '--show', action='store_true', help='show processed image')
+parser.add_argument('-p', '--publish', action='store_true', help='publish to networktables')
 parser.add_argument('-s', '--size', type=int, nargs=2, default=[160, 120], help='camera port')
 args = parser.parse_args()
+
+if args.publish:
+	from networktables import NetworkTables
+	sd = NetworkTables.getTable("SmartDashboard")
 
 
 hueMin = 73.26
@@ -101,6 +107,9 @@ while True:
 	
 	
 	et = time.time()
+	if args.publish:
+		sd.putNumberArray("Gear Peg", center)
+
 	print ("FPS: %f" % (1.0 / (et - st)))
-	print ("center: (%d, %d)" % center)
+	print ("center: (%d, %d)" % (center[0], center[1]))
 	sys.stdout.flush()
