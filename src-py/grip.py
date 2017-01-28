@@ -18,7 +18,7 @@ lumMax = 250
 
 
 # TODO: Test best value
-blur = (2, 2)
+blur = (6, 6)
 
 def contourCenter(contour):
 	try:
