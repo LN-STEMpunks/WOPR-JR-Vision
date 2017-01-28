@@ -18,7 +18,7 @@ lumMax = 250
 
 
 # TODO: Test best value
-blur = (6, 6)
+blur = (2, 2)
 
 def contourCenter(contour):
 	try:
@@ -60,8 +60,8 @@ camera = cv2.VideoCapture(args.camera)
 
 #camera.set_exposure_auto(0)
 
-camera.set(3,160*3)
-camera.set(4,120*3)
+camera.set(3,160)
+camera.set(4,120)
 
 def get_image():
 	retval, im = camera.read()
