@@ -6,6 +6,7 @@ import sys
 
 parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
 parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
+parser.add_argument('-show', '--show', action='store_true', help='camera port')
 parser.add_argument('-s', '--size', type=int, nargs=2, default=[160, 120], help='camera port')
 args = parser.parse_args()
 
@@ -76,7 +77,8 @@ while True:
 	st = time.time()
 
 	camera_capture = get_image()
-	outputim = camera_capture.copy()
+	if args.show:
+		outputim = camera_capture.copy()
 
 	contours = process(camera_capture)
 
@@ -85,15 +87,19 @@ while True:
 
 	if len(contours) >= 2:
 		contours = [contours[j] for j in twoLargestContours(contours)]
-		cv2.drawContours(outputim,contours,0,(255,0,0), 1)
-		cv2.drawContours(outputim,contours,1,(255,0,0), 1)
 		centers = [contourCenter(j) for j in contours]
-		cv2.circle(outputim, (int((centers[0][0] + centers[1][0])//2), int((centers[0][1] + centers[1][1])//2)), 1, (255, 0, 0), 2)
-
-	cv2.imshow('img', outputim)
-
+		center = (int((centers[0][0] + centers[1][0])//2), int((centers[0][1] + centers[1][1])//2))
+		
+		if args.show:
+			cv2.drawContours(outputim,contours,0,(255,0,0), 1)
+			cv2.drawContours(outputim,contours,1,(255,0,0), 1)
+			cv2.circle(outputim, center, 1, (255, 0, 0), 2)
+	if args.show:	
+		cv2.imshow('img', outputim)
 	k = cv2.waitKey(1)
+	
 	
 	et = time.time()
 	print ("FPS: %f" % (1.0 / (et - st)))
+	print ("center: (%d, %d)" % center)
 	sys.stdout.flush()
