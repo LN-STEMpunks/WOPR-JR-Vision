@@ -1,0 +1,19 @@
+###
+#
+# GITIGNORE
+#
+# We ignore all ./*.IMAGETYPE
+# But not images/ (so we can show examples)
+#
+###
+
+.DS_Store
+./*.png
+./*.jp[e]g
+./*.tiff
+
+!./images/*
+
+# cpp executables
+*.out
+*.o
