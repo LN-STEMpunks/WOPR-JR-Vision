@@ -10,4 +10,3 @@ apt install python-pip
 apt install libopencv-dev
 apt install python-opencv
 
-pip2 install -r requirements.txt
