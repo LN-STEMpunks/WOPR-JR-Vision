@@ -101,10 +101,12 @@ while True:
 		center = (int((centers[0][0] + centers[1][0])//2), int((centers[0][1] + centers[1][1])//2))
 		
 		if args.show:
-			cv2.drawContours(outputim,contours,0,(255,0,0), 1)
-			cv2.drawContours(outputim,contours,1,(255,0,0), 1)
-			cv2.rectangle(outputim, addPoint(center, (-1, -4)), addPoint(center, (+1, +4)), 1, (0, 0, 255), 2)
-			cv2.rectangle(outputim, addPoint(center, (-4, -1)), addPoint(center, (+4, +1)), 1, (0, 0, 255), 2)
+			cv2.drawContours(outputim,contours, 0, (255, 120, 0), 2)
+			cv2.drawContours(outputim,contours, 1, (255, 120, 0), 2)
+			cv2.line(outputim, addPoint(center, (0, -4)), addPoint(center, (0, 4)), (0, 0, 255), 1)
+			cv2.line(outputim, addPoint(center, (-4, 0)), addPoint(center, (4, 0)), (0, 0, 255), 1)
+			cv2.circle(outputim, center, 5, (0, 0, 255), 1)
+			#cv2.rectangle(outputim, addPoint(center, (-1, -3)), addPoint(center, (+1, +3)), (0, 0, 255), 2)
 	if args.show:	
 		cv2.imshow('img', outputim)
 	k = cv2.waitKey(1)
