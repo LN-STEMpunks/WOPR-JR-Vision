@@ -42,9 +42,28 @@ You can also use:
 `./deploy.sh computername.local:~/path/to/vision/ [-p password]` (replacing with the raspis name or IP, and where you want to put the contents of `./src`)
 
 
+## Running
+
+To view help, run `python src/grip.py -h`
+
+Mainly, when developing, you will use:
+
+`python src/grip.py --show`
+
+On the raspberry pi or jetson, use:
+
+`python src/grip.py -f thing.conf -ip roboRIO-XXXX-frc.local --publish`
+
+Where `thing.conf` is a copy of lab.conf, but tweaked for your current setting,
+
+`roboRIO-XXXX-frc.local` is the network tables address
+
+and `--publish` tells us to publish the findings to networktables
+
 ## Algorithms
 
-TODO: Explain
+Essentially, this finds contours within a certain threshold which is in `lab.conf` which is the reflective tape.
 
+Then, it takes the two largest contours, finds their center, and then plots a point (and publishes the coordinates to networktables) on the image
 
 

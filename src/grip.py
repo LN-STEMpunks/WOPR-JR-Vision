@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import cv2
 import numpy
 import math
@@ -9,27 +11,25 @@ parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
 parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
 parser.add_argument('-show', '--show', action='store_true', help='show processed image')
 parser.add_argument('-p', '--publish', action='store_true', help='publish to networktables')
-parser.add_argument('-ip', '--address', type=str, default="roboRIO-3966-frc.local", help='publish to networktables')
-parser.add_argument('-s', '--size', type=int, nargs=2, default=[160, 120], help='camera port')
+parser.add_argument('-ip', '--address', type=str, default="roboRIO-3966-frc.local", help='network tables address')
+parser.add_argument('-did', '--dashboardid', type=str, default="GearPeg", help='smart dashboard publish ID')
+parser.add_argument('-t', '--table', type=str, default="vision/gearpeg", help='smart dashboard publish ID')
+parser.add_argument('-s', '--size', type=int, nargs=2, default=[160, 120], help='camera size')
+parser.add_argument('-f', '--file', default="lab.conf", help='config file')
 args = parser.parse_args()
+
+# sets our preferences
+exec(open(args.file).read())
+
+def addPoint(p1, p2):
+	return (p1[0]+p2[0], p1[1]+p2[1])
 
 if args.publish:
 	from networktables import NetworkTables
 	NetworkTables.initialize(server=args.address)
 	sd = NetworkTables.getTable("SmartDashboard")
+	table = NetworkTables.getTable(args.table)
 
-hueMin = 73.26
-hueMax = 120.20
-satMin = 95.09
-satMax = 140.78
-lumMin = 100
-lumMax = 250
-
-def addPoint(p1, p2):
-	return (p1[0]+p2[0], p1[1]+p2[1])
-
-# TODO: Test best value
-blur = (6, 6)
 
 def contourCenter(contour):
 	try:
@@ -79,13 +79,15 @@ def get_image():
 	return im
 
 st, et = 0, 0
+camst, camet = 0, 0
 
 import time
 
 while True:
 	st = time.time()
-
+	camst = time.time()
 	camera_capture = get_image()
+	camet = time.time()
 	if args.show:
 		outputim = camera_capture.copy()
 
@@ -94,28 +96,35 @@ while True:
 	if contours is None:
 		contours = []
 
-	center = [-1, -1]
+	center = (-1, -1)
+
 	if len(contours) >= 2:
 		contours = [contours[j] for j in twoLargestContours(contours)]
 		centers = [contourCenter(j) for j in contours]
+
 		center = (int((centers[0][0] + centers[1][0])//2), int((centers[0][1] + centers[1][1])//2))
-		
+
 		if args.show:
 			cv2.drawContours(outputim,contours, 0, (255, 120, 0), 2)
 			cv2.drawContours(outputim,contours, 1, (255, 120, 0), 2)
 			cv2.line(outputim, addPoint(center, (0, -4)), addPoint(center, (0, 4)), (0, 0, 255), 1)
 			cv2.line(outputim, addPoint(center, (-4, 0)), addPoint(center, (4, 0)), (0, 0, 255), 1)
 			cv2.circle(outputim, center, 5, (0, 0, 255), 1)
-			#cv2.rectangle(outputim, addPoint(center, (-1, -3)), addPoint(center, (+1, +3)), (0, 0, 255), 2)
-	if args.show:	
-		cv2.imshow('img', outputim)
-	k = cv2.waitKey(1)
-	
-	
-	et = time.time()
-	if args.publish:
-		sd.putString("GearPegString", str(center))
 
-	print ("FPS: %f" % (1.0 / (et - st)))
-	print ("center: (%d, %d)" % (center[0], center[1]))
+	if args.show: cv2.imshow('img', outputim)
+	
+	k = cv2.waitKey(1)
+	et = time.time()
+	
+	fps = 1.0 / (et - st)
+	camfps = 1.0 / (camet - camst)
+
+	if args.publish:
+		sd.putString(args.dashboardid, str(center))
+		table.putNumber("x", center[0])
+		table.putNumber("y", center[1])
+		table.putNumber("fps", fps)
+		table.putNumber("camfps", camfps)
+
+	sys.stdout.write ("center: (%03d, %03d) fps: %3.1f camfps: %.1f   \r" % (center[0], center[1], fps, camfps))
 	sys.stdout.flush()
