@@ -25,6 +25,8 @@ satMax = 140.78
 lumMin = 100
 lumMax = 250
 
+def addPoint(p1, p2):
+	return (p1[0]+p2[0], p1[1]+p2[1])
 
 # TODO: Test best value
 blur = (6, 6)
@@ -101,7 +103,8 @@ while True:
 		if args.show:
 			cv2.drawContours(outputim,contours,0,(255,0,0), 1)
 			cv2.drawContours(outputim,contours,1,(255,0,0), 1)
-			cv2.circle(outputim, center, 1, (255, 0, 0), 2)
+			cv2.rectangle(outputim, addPoint(center, (-1, -4)), addPoint(center, (+1, +4)), 1, (0, 0, 255), 2)
+			cv2.rectangle(outputim, addPoint(center, (-4, -1)), addPoint(center, (+4, +1)), 1, (0, 0, 255), 2)
 	if args.show:	
 		cv2.imshow('img', outputim)
 	k = cv2.waitKey(1)
