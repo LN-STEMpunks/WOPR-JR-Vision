@@ -6,7 +6,9 @@ if [ "$UID" -ne "0" ]; then
     exit $?
 fi
 
-apt install python-pip
 apt install libopencv-dev
 apt install python-opencv
+
+# todo test
+yum install numpy "opencv*"
 
