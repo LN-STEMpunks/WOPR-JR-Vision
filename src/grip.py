@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 import cv2
 import numpy
@@ -66,18 +66,29 @@ def process(source0):
 	contours, hier = cv2.findContours(source0, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 	return contours
 
-camera = cv2.VideoCapture(args.camera)
+camera = None
 
+def init_camera():
+        global camera
+        camera = cv2.VideoCapture(args.camera)
+        while camera is None:
+                camera = cv2.VideoCapture(args.camera)
 
-#camera.set_exposure_auto(0)
+        #camera.set_exposure_auto(0)
 
-camera.set(3,args.size[0])
-camera.set(4,args.size[1])
+        camera.set(3,args.size[0])
+        camera.set(4,args.size[1])
 
 def get_image():
-	retval, im = camera.read()
+        retval, im = camera.read()
+        while im is None or not retval:
+                print retval
+                time.sleep(1)
+                init_camera()
+                retval, im = camera.read()
 	return im
 
+init_camera()
 st, et = 0, 0
 camst, camet = 0, 0
 
@@ -86,13 +97,12 @@ import time
 while True:
 	st = time.time()
 	camst = time.time()
-	camera_capture = get_image()
+	camera_capture=get_image()
 	camet = time.time()
 	if args.show:
 		outputim = camera_capture.copy()
-
-	contours = process(camera_capture)
-
+        contours = process(camera_capture)
+        
 	if contours is None:
 		contours = []
 
