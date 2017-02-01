@@ -130,11 +130,15 @@ while True:
 	camfps = 1.0 / (camet - camst)
 
 	if args.publish:
-		sd.putString(args.dashboardid, str(center))
-		table.putNumber("x", center[0])
-		table.putNumber("y", center[1])
-		table.putNumber("fps", fps)
-		table.putNumber("camfps", camfps)
+		if not sd.putString(args.dashboardid, str(center)):
+			print ("Couldn't publish to smart dashboard")
+		worked = True
+		worked = worked and table.putNumber("x", center[0])
+		worked = worked and table.putNumber("y", center[1])
+		worked = worked and table.putNumber("fps", fps)
+		worked = worked and table.putNumber("camfps", camfps)
+		if not worked:
+			print ("Error while writing to table")
 
 	sys.stdout.write ("center: (%03d, %03d) fps: %3.1f camfps: %.1f   \r" % (center[0], center[1], fps, camfps))
 	sys.stdout.flush()
