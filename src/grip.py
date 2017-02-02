@@ -14,7 +14,9 @@ parser.add_argument('-p', '--publish', action='store_true', help='publish to net
 parser.add_argument('-ip', '--address', type=str, default="roboRIO-3966-frc.local", help='network tables address')
 parser.add_argument('-did', '--dashboardid', type=str, default="GearPeg", help='smart dashboard publish ID')
 parser.add_argument('-t', '--table', type=str, default="vision/gearpeg", help='smart dashboard publish ID')
+
 parser.add_argument('-s', '--size', type=int, nargs=2, default=[160, 120], help='camera size')
+
 parser.add_argument('-f', '--file', default="lab.conf", help='config file')
 args = parser.parse_args()
 
@@ -23,6 +25,8 @@ exec(open(args.file).read())
 
 def addPoint(p1, p2):
 	return (p1[0]+p2[0], p1[1]+p2[1])
+def subPoint(p1, p2):
+	return (p1[0]-p2[0], p1[1]-p2[1])
 
 if args.publish:
 	from networktables import NetworkTables
@@ -38,20 +42,47 @@ def contourCenter(contour):
 	except:
 		return (0, 0)
 
-def twoLargestContours(contours):
-	idx1, idx2, area1, area2 = 0, 0, -1, -1
-	for i in range(0, len(contours)):
-		areai = cv2.contourArea(contours[i])
-		if (areai > area1):
-			area2 = area1
-			idx2 = idx1
+def largestContours(contours, num=2):
+        def keyFunc(contour):
+                v = cv2.contourArea(contour)
+                return v
+        return sorted(contours, key=keyFunc, reverse=True)[0:num]
 
-			area1 = areai
-			idx1 = i
-		elif (areai > area2):
-			area2 = areai
-			idx2 = i
-	return (idx1, idx2)
+def bestPegFit(contours):
+        import math
+        min_indexes = (-1, -1)
+        min_fitness = float('inf')
+        def fitness(c1, c2, a1, a2):
+                diff = subPoint(c1, c2)
+                diffangle = math.degrees(abs(math.atan2(diff[1], diff[0])))
+                if diffangle > 90:
+                        diffangle = abs(180 - diffangle)
+                if diff[0] == 0:
+                        diffratio = 0
+                else:
+                        diffratio = abs(float(diff[1]) / diff[0])
+                if 0 in [a1, a2]:
+                        diffarea = 0
+                else:
+                        diffarea = a1 / a2
+                        if diffarea < 1.0:
+                                diffarea = 1.0 / diffarea
+                if diffangle > 18:
+                        return float('inf')
+                return 2*diffangle + 4*diffratio + 20*diffarea
+        for i in range(0, len(contours)):
+                ic = contourCenter(contours[i])
+                ia = cv2.contourArea(contours[i])
+                for j in range(i+1, len(contours)):
+                        jc = contourCenter(contours[j])
+                        ja = cv2.contourArea(contours[j])
+                        fit = fitness(jc, ic, ja, ia)
+                        if fit < min_fitness:
+                                min_indexes = (i, j)
+                                min_fitness = fit
+        if -1 in min_indexes:
+                return None
+        return tuple([contours[i] for i in min_indexes])
 
 def process(source0):
 	"""
@@ -68,8 +99,18 @@ def process(source0):
 
 camera = None
 
+def set_exposure(ex):
+        import os
+        cmd = "v4l2-ctl -d /dev/video%d -c exposure_auto=1 -c exposure_absolute=%s" % (args.camera, str(ex))
+        os.system(cmd)
+        import time
+        time.sleep(.125)
+
 def init_camera():
         global camera
+        
+        set_exposure(exposure)
+        
         camera = cv2.VideoCapture(args.camera)
         while camera is None:
                 camera = cv2.VideoCapture(args.camera)
@@ -109,17 +150,20 @@ while True:
 	center = (-1, -1)
 
 	if len(contours) >= 2:
-		contours = [contours[j] for j in twoLargestContours(contours)]
-		centers = [contourCenter(j) for j in contours]
+		contours = [j for j in largestContours(contours, 4)]
+		contours = bestPegFit(contours)
 
-		center = (int((centers[0][0] + centers[1][0])//2), int((centers[0][1] + centers[1][1])//2))
+                if contours and len(contours) >= 2:
+                        centers = [contourCenter(j) for j in contours]
 
-		if args.show:
-			cv2.drawContours(outputim,contours, 0, (255, 120, 0), 2)
-			cv2.drawContours(outputim,contours, 1, (255, 120, 0), 2)
-			cv2.line(outputim, addPoint(center, (0, -4)), addPoint(center, (0, 4)), (0, 0, 255), 1)
-			cv2.line(outputim, addPoint(center, (-4, 0)), addPoint(center, (4, 0)), (0, 0, 255), 1)
-			cv2.circle(outputim, center, 5, (0, 0, 255), 1)
+                        center = (int((centers[0][0] + centers[1][0])//2), int((centers[0][1] + centers[1][1])//2))
+
+                        if args.show:
+                                cv2.drawContours(outputim,contours, 0, (255, 120, 0), 2)
+                                cv2.drawContours(outputim,contours, 1, (255, 120, 0), 2)
+                                cv2.line(outputim, addPoint(center, (0, -4)), addPoint(center, (0, 4)), (0, 0, 255), 1)
+                                cv2.line(outputim, addPoint(center, (-4, 0)), addPoint(center, (4, 0)), (0, 0, 255), 1)
+                                cv2.circle(outputim, center, 5, (0, 0, 255), 1)
 
 	if args.show: cv2.imshow('img', outputim)
 	
