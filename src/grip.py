@@ -53,6 +53,7 @@ def bestPegFit(contours):
         min_indexes = (-1, -1)
         min_fitness = float('inf')
         def fitness(c1, c2, a1, a2):
+		fromcenter = abs((2.0*c1[1]-args.size[1])/args.size[1])**2 + abs((2.0*c2[1]-args.size[1])/args.size[1])**2
                 diff = subPoint(c1, c2)
                 diffangle = math.degrees(abs(math.atan2(diff[1], diff[0])))
                 if diffangle > 90:
@@ -69,7 +70,7 @@ def bestPegFit(contours):
                                 diffarea = 1.0 / diffarea
                 if diffangle > 18:
                         return float('inf')
-                return 2*diffangle + 4*diffratio + 20*diffarea
+                return 2*diffangle + 4*diffratio + 20*diffarea + 25*fromcenter
         for i in range(0, len(contours)):
                 ic = contourCenter(contours[i])
                 ia = cv2.contourArea(contours[i])
@@ -175,14 +176,15 @@ while True:
 
 	if args.publish:
 		if not sd.putString(args.dashboardid, str(center)):
-			print ("Couldn't publish to smart dashboard")
+			sd.delete(args.dashboardid)
+			print ("Couldn't publish to smart dashboard\n")
 		worked = True
 		worked = worked and table.putNumber("x", center[0])
 		worked = worked and table.putNumber("y", center[1])
 		worked = worked and table.putNumber("fps", fps)
 		worked = worked and table.putNumber("camfps", camfps)
 		if not worked:
-			print ("Error while writing to table")
+			print ("Error while writing to table\n")
 
 	sys.stdout.write ("center: (%03d, %03d) fps: %3.1f camfps: %.1f   \r" % (center[0], center[1], fps, camfps))
 	sys.stdout.flush()
