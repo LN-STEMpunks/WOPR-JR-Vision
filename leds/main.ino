@@ -17,9 +17,20 @@ The layout for commands:
 */
 
 
-
-
 #include "FastLED.h"
+
+#include <SPI.h>
+#include <Ethernet.h>
+
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };  
+//the IP address for the shield:
+byte ip[] = { 10, 39, 66, 177 };    
+// the router's gateway address:
+byte gateway[] = { 10, 0, 0, 1 };
+// the subnet:
+byte subnet[] = { 255, 255, 255, 0 };
+
+
 
 #define NUM_LEDS 150
 #define DATA_PIN 6
@@ -30,15 +41,25 @@ CRGB leds[NUM_LEDS];
 
 int is_good = 0;
 
-/*
-#define NUM_ARGS 3
 
+#define NUM_ARGS 5
 int args[NUM_ARGS];
-*/
+
+#define RGB_args(i0, i1, i2)
+
 
 #define MAX_FUNC 256
-
 int func_id, function_runs, prev_func_id;
+
+
+CRGB nothing = CRGB(0,0,0);
+CRGB red = CRGB(0,255,0);
+CRGB green = CRGB(255,0,0);
+CRGB blue = CRGB(0,0,255);
+
+CRGB white = CRGB(255,255,255);
+//todo add more colors
+
 
 
 void (*functionArr[MAX_FUNC])();
@@ -47,18 +68,22 @@ void run_function() {
 (*functionArr[func_id])(); //calls the function at the index of `index` in the array
 }
 
+EthernetServer server = EthernetServer(23);
 
 void setup() {
-	Serial.begin(9600);
+	//Serial.begin(9600);
+	Ethernet.begin(mac, ip, gateway, subnet);
+	server.begin();
+
+
 	LEDS.addLeds<WS2812, DATA_PIN, RGB>(leds, NUM_LEDS);
 	LEDS.setBrightness(BRIGHTNESS);
 	clear_leds();
 
 	functionArr[0] = _nothing_0;
 	functionArr[1] = _off_1;
-	functionArr[2] = _onR_2;
-	functionArr[3] = _onG_3;
-	functionArr[4] = _onB_4;
+	functionArr[2] = _on_2;
+	functionArr[3] = _fade_3;
 
 	functionArr[16] = _sweep_16;
 
@@ -81,8 +106,9 @@ bool _should_abort() {
 
 void fade(int byte) { 
 	for(int i = 0; i < NUM_LEDS; i++) {
-		leds[i] = 
-		leds[i].nscale8(byte); 
+		for (int j = 0; j < 3; ++j) {
+			leds[i][j] = (leds[i][j]*byte) / 256;
+		}
 	}
 }
 
@@ -91,6 +117,11 @@ void random_leds(int rm, int gm, int bm) {
 		leds[i] = CRGB((random()%256)*gm/256, (random()%256)*rm/256, (random()%256)*bm/256);
 	}
 }
+
+CRGB mixColor(CRGB from, CRGB toadd, int toaddweight) {
+	return CRGB(from[0]+(toadd[0]*toaddweight)/256, from[1]+(toadd[1]*toaddweight)/256, from[2]+(toadd[2]*toaddweight)/256)
+}
+
 
 int cmp_leds(CRGB a, CRGB b, int channel) {
 	if (channel == 3) {
@@ -102,6 +133,18 @@ int cmp_leds(CRGB a, CRGB b, int channel) {
 	}
 }
 
+CRGB getColorFromArgs() {
+	return CRGB(args[1], args[0], args[2]);
+}
+
+bool areArgsZero() {
+	for (int i = 0; i < NUM_ARGS; ++i) {
+		if (args[i] != 0) {
+			return false;
+		}
+	}
+	return true;
+}
 
 
 // Start CONTROL functions
@@ -111,56 +154,65 @@ void _nothing_0() {
 void _off_1() {
 	clear_leds();
 }
-void _onR_2() {
-	CRGB color = CRGB(255, 0, 0);
-	for (int i = 0; i < NUM_LEDS; ++i) {
-		leds[i] = color;
-	}
-}
-void _onG_3() {
-	CRGB color = CRGB(0, 255, 0);
-	for (int i = 0; i < NUM_LEDS; ++i) {
-		leds[i] = color;
-	}
-}
-void _onB_4() {
-	CRGB color = CRGB(0, 0, 255);
+void _on_2() {
+	CRGB color = getColorFromArgs();
 	for (int i = 0; i < NUM_LEDS; ++i) {
 		leds[i] = color;
 	}
 }
 
-void _fade_3() { 
+void _fade_3() {
+	int fade_rate = 250; 
+	int delay_rate = args[1];
+	if (args[0] != 0) {
+		fade_rate = args[0];
+	}
 	fade(250);
+	delay(delay_rate);
 }
 
 
 void _sweep_16() {
-	CRGB nothing = CRGB(0,0,0);
-	CRGB color = CRGB(255, 50, 120);
+	
+	CRGB color = getColorFromArgs();
+	int fade_rate = args[3];
+	int delay_rate = args[4];
 
-	for (int i = 1; i < NUM_LEDS; ++i) {
+	for (int i = 0; i < NUM_LEDS; ++i) {
 		if (_should_abort()) { return; }
 
-		leds[i-1] = nothing;
 		leds[i] = color;
 
 		FastLED.show();
 
-		_fade_3();
-		delay(5);
+		fade(fade_rate);
+		delay(delay_rate);
 	}
-	leds[NUM_LEDS-1] = nothing;
 	FastLED.show();
 }
 
 void _bubblesort_128() {
+	int ch = args[0];
+	if (ch == 0) {
+		ch = 1;
+	} else if (ch == 1) {
+		ch = 0;
+	}
+	int intensity = args[1];
 	if (function_runs == 0) {
-		random_leds(0, 0, 255);
+		if (ch == 0) {
+			random_leds(0, intensity, 0);
+		} else if (ch == 1) {
+			random_leds(intensity, 0, 0);
+		} else if (ch == 2) {
+			random_leds(0, 0, intensity);
+		} else {
+			random_leds(intensity, intensity, intensity);
+		}
 	}
 	CRGB tmp;
 	for (int i = 1; i < NUM_LEDS; ++i) {
-		if (cmp_leds(leds[i], leds[i-1], 2) < 0) {
+		if (cmp_leds(leds[i], leds[i-1], ch) < 0) {
 			tmp = leds[i];
 			leds[i] = leds[i-1];
 			leds[i-1] = tmp;
@@ -172,8 +224,13 @@ void _bubblesort_128() {
 
 
 void parse_serial() {
-	if (Serial.available() > 0) {
-		func_id = (int)Serial.read();
+	EthernetClient client = server.available();
+	if (client == true) {
+		func_id = (int)client.read();
+		for (int i = 0; i < NUM_ARGS; ++i) {
+			args[i] = (int)client.read();
+		}
+		//func_id = 2;
 		function_runs = 0;
 	}
 }
