@@ -206,27 +206,18 @@ void _cylon_17() {
 
 	if (function_runs == 0) {
 		vars[0] = 0;
-		vars[1] = 0;
 	}
 
 	for (int i = 0; i < NUM_LEDS; ++i) {
-		if (abs(i - vars[0]) < width) {
+		if (i - vars[0] <= width && vars[0] - i =< 0) {
 			leds[i] = color;
 		} else {
 			leds[i] = notcolor;
 		}
 	}
 
-	vars[1] = (vars[1] + 1) % (2*NUM_LEDS);
-	vars[0] = abs(vars[1] - NUM_LEDS);
-	
-	if (vars[0] < width-1) {
-		vars[1] = vars[1] + width-1;
-		vars[0] = width;
-	} else if (vars[0] > NUM_LEDS - width) {
-		vars[1] = vars[1] + width;
-		vars[0] = NUM_LEDS - width;
-	}
+	vars[0] = (vars[0] + 1) % (2*(NUM_LEDS-width));
+
 	delay(wait);
 }
 
