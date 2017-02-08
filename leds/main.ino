@@ -41,15 +41,20 @@ CRGB leds[NUM_LEDS];
 
 int is_good = 0;
 
-
-#define NUM_ARGS 5
+// enough room for two colors, and two arguments
+#define NUM_ARGS (2*3+2)
 int args[NUM_ARGS];
 
-#define RGB_args(i0, i1, i2)
+
+#define RGB_args(i0, i1, i2) (CRGB(args[i1], args[i0], args[i2]))
 
 
 #define MAX_FUNC 256
 int func_id, function_runs, prev_func_id;
+
+// use these for functions
+#define MAX_VARS 10
+int vars[10];
 
 
 CRGB nothing = CRGB(0,0,0);
@@ -59,8 +64,6 @@ CRGB blue = CRGB(0,0,255);
 
 CRGB white = CRGB(255,255,255);
 //todo add more colors
-
-
 
 void (*functionArr[MAX_FUNC])();
 
@@ -86,6 +89,7 @@ void setup() {
 	functionArr[3] = _fade_3;
 
 	functionArr[16] = _sweep_16;
+	functionArr[17] = _cylon_17;
 
 	functionArr[128] = _bubblesort_128;
 }
@@ -104,6 +108,12 @@ bool _should_abort() {
 	return Serial.available() > 0;
 }
 
+void fademix(CRGB color, int byte) { 
+	for(int i = 0; i < NUM_LEDS; i++) {
+		leds[i] = mixColor(leds[i], color, byte);
+	}
+}
+
 void fade(int byte) { 
 	for(int i = 0; i < NUM_LEDS; i++) {
 		for (int j = 0; j < 3; ++j) {
@@ -119,7 +129,8 @@ void random_leds(int rm, int gm, int bm) {
 }
 
 CRGB mixColor(CRGB from, CRGB toadd, int toaddweight) {
-	return CRGB(from[0]+(toadd[0]*toaddweight)/256, from[1]+(toadd[1]*toaddweight)/256, from[2]+(toadd[2]*toaddweight)/256)
+	int fr = toaddweight, to = 256 - toaddweight;
+	return CRGB((fr*from[0]+to*toadd[0])/256, (fr*from[1]+to*toadd[1])/256, (fr*from[2]+to*toadd[2])/256);
 }
 
 
@@ -133,9 +144,6 @@ int cmp_leds(CRGB a, CRGB b, int channel) {
 	}
 }
 
-CRGB getColorFromArgs() {
-	return CRGB(args[1], args[0], args[2]);
-}
 
 bool areArgsZero() {
 	for (int i = 0; i < NUM_ARGS; ++i) {
@@ -155,28 +163,27 @@ void _off_1() {
 	clear_leds();
 }
 void _on_2() {
-	CRGB color = getColorFromArgs();
+	CRGB color = RGB_args(0, 1, 2);
 	for (int i = 0; i < NUM_LEDS; ++i) {
 		leds[i] = color;
 	}
 }
 
 void _fade_3() {
-	int fade_rate = 250; 
+	int fade_rate = args[0]; 
 	int delay_rate = args[1];
-	if (args[0] != 0) {
-		fade_rate = args[0];
-	}
-	fade(250);
+	
+	fade(fade_rate);
 	delay(delay_rate);
 }
 
 
 void _sweep_16() {
 	
-	CRGB color = getColorFromArgs();
-	int fade_rate = args[3];
-	int delay_rate = args[4];
+	CRGB color = RGB_args(0, 1, 2);
+	CRGB tocolor = RGB_args(3, 4, 5);
+	int fade_rate = args[6];
+	int delay_rate = args[7];
 
 	for (int i = 0; i < NUM_LEDS; ++i) {
 		if (_should_abort()) { return; }
@@ -185,10 +192,42 @@ void _sweep_16() {
 
 		FastLED.show();
 
-		fade(fade_rate);
+		fademix(tocolor, fade_rate);
 		delay(delay_rate);
 	}
 	FastLED.show();
+}
+
+void _cylon_17() {
+	CRGB color = RGB_args(0, 1, 2);
+	CRGB notcolor = RGB_args(3, 4, 5);
+	int width = args[6];
+	int wait = args[7];
+
+	if (function_runs == 0) {
+		vars[0] = 0;
+		vars[1] = 0;
+	}
+
+	for (int i = 0; i < NUM_LEDS; ++i) {
+		if (abs(i - vars[0]) < width) {
+			leds[i] = color;
+		} else {
+			leds[i] = notcolor;
+		}
+	}
+
+	vars[1] = (vars[1] + 1) % (2*NUM_LEDS);
+	vars[0] = abs(vars[1] - NUM_LEDS);
+	
+	if (vars[0] < width-1) {
+		vars[1] = vars[1] + width-1;
+		vars[0] = width;
+	} else if (vars[0] > NUM_LEDS - width) {
+		vars[1] = vars[1] + width;
+		vars[0] = NUM_LEDS - width;
+	}
+	delay(wait);
 }
 
 void _bubblesort_128() {
