@@ -3,9 +3,9 @@
 import cv2
 import numpy
 import math
-import argparse
 import sys
 
+import argparse
 
 parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
 parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
