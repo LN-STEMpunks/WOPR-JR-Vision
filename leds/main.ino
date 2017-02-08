@@ -41,8 +41,8 @@ CRGB leds[NUM_LEDS];
 
 int is_good = 0;
 
-// enough room for two colors, and two arguments
-#define NUM_ARGS (2*3+2)
+// enough room for four colors, and four arguments
+#define NUM_ARGS (4*3+4)
 int args[NUM_ARGS];
 
 
@@ -82,6 +82,7 @@ void setup() {
 	LEDS.addLeds<WS2812, DATA_PIN, RGB>(leds, NUM_LEDS);
 	LEDS.setBrightness(BRIGHTNESS);
 	clear_leds();
+	FastLED.show();
 
 	functionArr[0] = _nothing_0;
 	functionArr[1] = _off_1;
@@ -161,12 +162,14 @@ void _nothing_0() {
 }
 void _off_1() {
 	clear_leds();
+	FastLED.show();
 }
 void _on_2() {
 	CRGB color = RGB_args(0, 1, 2);
 	for (int i = 0; i < NUM_LEDS; ++i) {
 		leds[i] = color;
 	}
+	FastLED.show();
 }
 
 void _fade_3() {
@@ -174,6 +177,8 @@ void _fade_3() {
 	int delay_rate = args[1];
 	
 	fade(fade_rate);
+	
+	FastLED.show();
 	delay(delay_rate);
 }
 
@@ -195,29 +200,52 @@ void _sweep_16() {
 		fademix(tocolor, fade_rate);
 		delay(delay_rate);
 	}
+	
 	FastLED.show();
+}
+
+void cylon_base(int sind, int min, int max, int width, CRGB col, CRGB notcol, int fadev) {
+	for (int i = min; i < max; ++i) {
+		if (i <= sind + width && i >= sind) {
+			leds[i] = mixColor(leds[i], col, fadev);
+		} else {
+			leds[i] = mixColor(leds[i], notcol, fadev);
+		}
+	}
 }
 
 void _cylon_17() {
 	CRGB color = RGB_args(0, 1, 2);
 	CRGB notcolor = RGB_args(3, 4, 5);
-	int width = args[6];
-	int wait = args[7];
+	int width = args[6]-1;
+	int fadev = args[7];
+	int wait = args[8];
+
+	int min0 = 0, max0 = 50, min1 = 50, max1 = 100, min2 = 100, max2 = 150;
+
+	int _sl0 = (max0 - min0) - width;
+	int _sl1 = (max1 - min1) - width;
+	int _sl2 = (max2 - min2) - width;
 
 	if (function_runs == 0) {
 		vars[0] = 0;
+		vars[1] = 30;
+		vars[2] = 0;
 	}
 
-	for (int i = 0; i < NUM_LEDS; ++i) {
-		if (i - vars[0] <= width && vars[0] - i =< 0) {
-			leds[i] = color;
-		} else {
-			leds[i] = notcolor;
-		}
-	}
+	int sind0 = abs(vars[0] - (_sl0)) + min0;
+	int sind1 = abs(vars[1] - (_sl1)) + min1;
+	int sind2 = abs(vars[2] - (_sl2)) + min2;
 
-	vars[0] = (vars[0] + 1) % (2*(NUM_LEDS-width));
+	cylon_base(sind0, min0, max0, width, color, notcolor, fadev);
+	cylon_base(sind1, min1, max1, width, color, notcolor, fadev);
+	cylon_base(sind2, min2, max2, width, color, notcolor, fadev);
 
+	vars[0] = (vars[0] + 1) % (2*(_sl0));
+	vars[1] = (vars[1] + 1) % (2*(_sl1));
+	vars[2] = (vars[2] + 1) % (2*(_sl2));
+
+	FastLED.show();
 	delay(wait);
 }
 
@@ -249,6 +277,7 @@ void _bubblesort_128() {
 			FastLED.show();
 		}
 	}
+	FastLED.show();
 }
 
 
@@ -257,11 +286,14 @@ void parse_serial() {
 	EthernetClient client = server.available();
 	if (client == true) {
 		func_id = (int)client.read();
-		for (int i = 0; i < NUM_ARGS; ++i) {
-			args[i] = (int)client.read();
+		if (func_id != 0) {
+			for (int i = 0; i < NUM_ARGS; ++i) {
+				args[i] = (int)client.read();
+			}
+			function_runs = 0;
+		} else {
+			func_id = prev_func_id;
 		}
-		//func_id = 2;
-		function_runs = 0;
 	}
 }
 
@@ -271,7 +303,7 @@ void loop() {
 
 	run_function();
 
-	FastLED.show();
+	//FastLED.show();
 
 	function_runs += 1;
 	prev_func_id = func_id;
