@@ -35,9 +35,11 @@ COLOR_BACKGROUND="255,0,0"
 FADE="0"
 DELAY="10"
 
-MAX_WIDTH = 50
+MAX_WIDTH = 150
 
 def sendbytes(byte_send):
+        #s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #s.connect((host, port))
 	byte_send = ",".join(byte_send).split(",")
 	byte_send = map(int, byte_send)
 
@@ -50,7 +52,7 @@ def sendbytes(byte_send):
 		byte_send = byte_send + [0]*(NUM_ARGS-len(byte_send))
 
 	s.send(bytearray(byte_send))
-
+	#s.close()
 	return bytearray(byte_send)
 	
 if len(args.bytes) > 0:
@@ -61,6 +63,12 @@ else:
 	from networktables import NetworkTables
 	NetworkTables.initialize(server=args.address)
 	table = NetworkTables.getTable(args.table)
+	import time
+
+	time.sleep(.5)
+	print "table arg",args.table
+	print "address",args.address
+	print "val",table.getNumber('fitness')
 
 	def fitness_to_width(fit):
 		if fit <= MAX_WIDTH:
@@ -70,10 +78,22 @@ else:
 			ret = 255
 		return ret
 
+	def x_to_width(camw, _x):
+		if _x < 0:
+			return 0
+		return MAX_WIDTH - 1.6*MAX_WIDTH*(abs(2*_x - camw)/camw)
+
 	while True:
 		fitness = table.getNumber("fitness")
-		width = fitness_to_width(fitness)
-		sendbytes([CYLON_FUNC_ID, CYLON_BAR, CYLON_BACKGROUND, width, FADE, DELAY])
-
-s.close()
-
+		x = table.getNumber("x")
+		cw = table.getNumber("camwidth")
+		width = x_to_width(cw, x)
+		#sendbytes([CYLON_FUNC_ID, COLOR_BAR, COLOR_BACKGROUND, str(int(width)), FADE, DELAY])
+		try:	
+			sendbytes(["18", COLOR_BAR, str(int(width)), DELAY])
+		except:
+			s.close()
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)	
+			s.connect((host, port))
+		time.sleep(.2)
+		

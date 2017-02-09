@@ -201,7 +201,6 @@ while True:
 		worked = worked and table.putNumber("camwidth", args.size[0])
 		worked = worked and table.putNumber("camheight", args.size[1])
 
-
 		if not worked:
 			print ("Error while writing to table\n")
 
