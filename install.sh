@@ -8,6 +8,7 @@ fi
 
 apt install libopencv-dev
 apt install python-opencv
+apt install v4l-utils
 
 # todo test
 yum install numpy "opencv*"

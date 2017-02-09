@@ -48,43 +48,6 @@ def largestContours(contours, num=2):
                 return v
         return sorted(contours, key=keyFunc, reverse=True)[0:num]
 
-def bestPegFit(contours):
-        import math
-        min_indexes = (-1, -1)
-        min_fitness = float('inf')
-        def fitness(c1, c2, a1, a2):
-		fromcenter = abs((2.0*c1[1]-args.size[1])/args.size[1])**2 + abs((2.0*c2[1]-args.size[1])/args.size[1])**2
-                diff = subPoint(c1, c2)
-                diffangle = math.degrees(abs(math.atan2(diff[1], diff[0])))
-                if diffangle > 90:
-                        diffangle = abs(180 - diffangle)
-                if diff[0] == 0:
-                        diffratio = 0
-                else:
-                        diffratio = abs(float(diff[1]) / diff[0])
-                if 0 in [a1, a2]:
-                        diffarea = 0
-                else:
-                        diffarea = a1 / a2
-                        if diffarea < 1.0:
-                                diffarea = 1.0 / diffarea
-                if diffangle > 18:
-                        return float('inf')
-                return 2*diffangle + 4*diffratio + 20*diffarea + 25*fromcenter
-        for i in range(0, len(contours)):
-                ic = contourCenter(contours[i])
-                ia = cv2.contourArea(contours[i])
-                for j in range(i+1, len(contours)):
-                        jc = contourCenter(contours[j])
-                        ja = cv2.contourArea(contours[j])
-                        fit = fitness(jc, ic, ja, ia)
-                        if fit < min_fitness:
-                                min_indexes = (i, j)
-                                min_fitness = fit
-        if -1 in min_indexes:
-                return None
-        return tuple([contours[i] for i in min_indexes])
-
 def process(source0):
 	"""
 	Runs the pipeline and sets all outputs to new values.
@@ -130,6 +93,48 @@ def get_image():
                 retval, im = camera.read()
 	return im
 
+
+
+def bestPegFit(contours):
+        import math
+        min_indexes = (-1, -1)
+        min_fitness = float('inf')
+        def fitness(c1, c2, a1, a2):
+		fromcenter = abs((2.0*c1[1]-args.size[1])/args.size[1])**2 + abs((2.0*c2[1]-args.size[1])/args.size[1])**2
+                diff = subPoint(c1, c2)
+                diffangle = math.degrees(abs(math.atan2(diff[1], diff[0])))
+                if diffangle > 90:
+                        diffangle = abs(180 - diffangle)
+                if diff[0] == 0:
+                        diffratio = 0
+                else:
+                        diffratio = abs(float(diff[1]) / diff[0])
+                if 0 in [a1, a2]:
+                        diffarea = 0
+                else:
+                        diffarea = a1 / a2
+                        if diffarea < 1.0:
+                                diffarea = 1.0 / diffarea
+                if diffangle > 18:
+                        return float('inf')
+                return 2*diffangle + 4*diffratio + 20*diffarea + 25*fromcenter
+        for i in range(0, len(contours)):
+                ic = contourCenter(contours[i])
+                ia = cv2.contourArea(contours[i])
+                for j in range(i+1, len(contours)):
+                        jc = contourCenter(contours[j])
+                        ja = cv2.contourArea(contours[j])
+                        fit = fitness(jc, ic, ja, ia)
+                        if fit < min_fitness:
+                                min_indexes = (i, j)
+                                min_fitness = fit
+        if -1 in min_indexes:
+                return (None, float('inf'))
+
+        return (tuple([contours[i] for i in min_indexes]), min_fitness)
+
+
+
 init_camera()
 st, et = 0, 0
 camst, camet = 0, 0
@@ -144,6 +149,7 @@ while True:
 	if args.show:
 		outputim = camera_capture.copy()
         contours = process(camera_capture)
+        fitness = float('inf')
         
 	if contours is None:
 		contours = []
@@ -152,7 +158,7 @@ while True:
 
 	if len(contours) >= 2:
 		contours = [j for j in largestContours(contours, 4)]
-		contours = bestPegFit(contours)
+		contours, fitness = bestPegFit(contours)
 
                 if contours and len(contours) >= 2:
                         centers = [contourCenter(j) for j in contours]
@@ -174,17 +180,30 @@ while True:
 	fps = 1.0 / (et - st)
 	camfps = 1.0 / (camet - camst)
 
+        if (fitness > 10000):
+                fitness = 10000
+
 	if args.publish:
 		if not sd.putString(args.dashboardid, str(center)):
 			sd.delete(args.dashboardid)
 			print ("Couldn't publish to smart dashboard\n")
+
+                
 		worked = True
+		worked = worked and table.putNumber("fitness", fitness)
+
 		worked = worked and table.putNumber("x", center[0])
 		worked = worked and table.putNumber("y", center[1])
-		worked = worked and table.putNumber("fps", fps)
+		
+                worked = worked and table.putNumber("fps", fps)
+
 		worked = worked and table.putNumber("camfps", camfps)
+		worked = worked and table.putNumber("camwidth", args.size[0])
+		worked = worked and table.putNumber("camheight", args.size[1])
+
+
 		if not worked:
 			print ("Error while writing to table\n")
 
-	sys.stdout.write ("center: (%03d, %03d) fps: %3.1f camfps: %.1f   \r" % (center[0], center[1], fps, camfps))
+	sys.stdout.write ("center: (%03d, %03d) fitness: %05d fps: %3.1f camfps: %.1f   \r" % (center[0], center[1], int(fitness), fps, camfps))
 	sys.stdout.flush()
