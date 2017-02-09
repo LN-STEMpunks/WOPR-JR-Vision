@@ -23,10 +23,13 @@ port = int(args.arduinoaddress.split(":")[1])
 
 # enough for 4 colors, 4 args, and a function
 NUM_ARGS = (4*3+4)
+s = None
+try:
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-s.connect((host, port))
+	s.connect((host, port))
+except:
+	pass
 
 CYLON_FUNC_ID="17"
 COLOR_BAR="0,255,0"
@@ -65,10 +68,7 @@ else:
 	table = NetworkTables.getTable(args.table)
 	import time
 
-	time.sleep(.5)
-	print "table arg",args.table
-	print "address",args.address
-	print "val",table.getNumber('fitness')
+	time.sleep(1.0)
 
 	def fitness_to_width(fit):
 		if fit <= MAX_WIDTH:
@@ -84,16 +84,17 @@ else:
 		return MAX_WIDTH - 1.6*MAX_WIDTH*(abs(2*_x - camw)/camw)
 
 	while True:
-		fitness = table.getNumber("fitness")
-		x = table.getNumber("x")
-		cw = table.getNumber("camwidth")
-		width = x_to_width(cw, x)
+		try:
+			fitness = table.getNumber("fitness")
+			x = table.getNumber("x")
+			cw = table.getNumber("camwidth")
+			width = x_to_width(cw, x)
 		#sendbytes([CYLON_FUNC_ID, COLOR_BAR, COLOR_BACKGROUND, str(int(width)), FADE, DELAY])
-		try:	
 			sendbytes(["18", COLOR_BAR, str(int(width)), DELAY])
 		except:
 			s.close()
+			time.sleep(.5)
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)	
 			s.connect((host, port))
-		time.sleep(.2)
+		time.sleep(.25)
 		
