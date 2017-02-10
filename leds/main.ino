@@ -91,6 +91,7 @@ void setup() {
 
 	functionArr[16] = _sweep_16;
 	functionArr[17] = _cylon_17;
+	functionArr[18] = _width_18;
 
 	functionArr[128] = _bubblesort_128;
 }
@@ -191,7 +192,7 @@ void _sweep_16() {
 	int delay_rate = args[7];
 
 	for (int i = 0; i < NUM_LEDS; ++i) {
-		if (_should_abort()) { return; }
+		//if (_should_abort()) { return; }
 
 		leds[i] = color;
 
@@ -244,6 +245,17 @@ void _cylon_17() {
 	vars[0] = (vars[0] + 1) % (2*(_sl0));
 	vars[1] = (vars[1] + 1) % (2*(_sl1));
 	vars[2] = (vars[2] + 1) % (2*(_sl2));
+
+	FastLED.show();
+	delay(wait);
+}
+
+void _width_18() {
+	CRGB color = RGB_args(0, 1, 2);
+	int width = args[3]-1;
+	int wait = args[4];
+
+	cylon_base((NUM_LEDS - width)/2, 0, NUM_LEDS, width, color, CRGB(0, 0, 0), 10);
 
 	FastLED.show();
 	delay(wait);
