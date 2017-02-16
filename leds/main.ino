@@ -298,7 +298,7 @@ void parse_serial() {
 	EthernetClient client = server.available();
 	if (client == true) {
 		func_id = (int)client.read();
-		if (func_id != 0) {
+		if (func_id > 0) {
 			for (int i = 0; i < NUM_ARGS; ++i) {
 				args[i] = (int)client.read();
 			}
