@@ -23,6 +23,8 @@ port = int(args.arduinoaddress.split(":")[1])
 
 # enough for 4 colors, 4 args, and a function
 NUM_ARGS = (4*3+4)
+# one byte for function ID, plus NUM_ARGS
+MSG_SIZE = NUM_ARGS+1
 s = None
 try:
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,13 +48,13 @@ def sendbytes(byte_send):
 	byte_send = ",".join(byte_send).split(",")
 	byte_send = map(int, byte_send)
 
-	if len(byte_send) > NUM_ARGS:
+	if len(byte_send) > MSG_SIZE:
 		#print ("ERROR: you entered more bytes than expected (expected {0}, got {1})".format(NUM_ARGS, len(byte_send)))
-		byte_send = byte_send[0:NUM_ARGS]
+		byte_send = byte_send[0:MSG_SIZE]
 
-	if len(byte_send) < NUM_ARGS:
+	if len(byte_send) < MSG_SIZE:
 		#print ("ERROR: you entered less bytes than expected (expected {0}, got {1})".format(NUM_ARGS, len(byte_send)))
-		byte_send = byte_send + [0]*(NUM_ARGS-len(byte_send))
+		byte_send = byte_send + [0]*(MSG_SIZE-len(byte_send))
 
 	s.send(bytearray(byte_send))
 	#s.close()
@@ -89,9 +91,10 @@ else:
 			x = table.getNumber("x")
 			cw = table.getNumber("camwidth")
 			width = x_to_width(cw, x)
-		#sendbytes([CYLON_FUNC_ID, COLOR_BAR, COLOR_BACKGROUND, str(int(width)), FADE, DELAY])
+			#sendbytes([CYLON_FUNC_ID, COLOR_BAR, COLOR_BACKGROUND, str(int(width)), FADE, DELAY])
 			sendbytes(["18", COLOR_BAR, str(int(width)), DELAY])
 		except:
+			print 'error sending bytes'
 			s.close()
 			time.sleep(.5)
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)	
