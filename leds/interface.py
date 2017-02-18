@@ -18,7 +18,6 @@ parser.add_argument('-n', '--numbytes', type=int, default=(4 * 3 + 4), help='num
 
 args = parser.parse_args()
 
-time.sleep(args.delay)
 
 host = args.arduinoaddress.split(":")[0]
 port = int(args.arduinoaddress.split(":")[1])
