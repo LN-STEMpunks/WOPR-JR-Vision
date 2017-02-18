@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(description='WOPR-JR LED interface')
 
 parser.add_argument('-b', '--bytes', type=str, nargs='*', default=[], help='bytes to send')
 parser.add_argument('-ip', '--address', type=str, default="roboRIO-3966-frc.local", help='network tables address')
-parser.add_argument('-arduinoip', '--arduinoaddress', type=str, default="10.39.66.177:23", help='arduino address')
+parser.add_argument('-aip', '--arduinoaddress', type=str, default="10.39.66.177:5800", help='arduino address')
 parser.add_argument('-t', '--table', type=str, default="vision/gearpeg", help='networktables table')
 parser.add_argument('-n', '--numbytes', type=int, default=(4 * 3 + 4), help='number of bytes expected')
 
