@@ -75,7 +75,7 @@ void run_function() {
   (*functionArr[func_id])(); //calls the function at the index of `index` in the array
 }
 
-EthernetServer server = EthernetServer(23);
+EthernetServer server = EthernetServer(5800);
 
 void setup() {
   Serial.begin(9600);
