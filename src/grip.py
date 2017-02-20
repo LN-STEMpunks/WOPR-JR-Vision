@@ -234,7 +234,7 @@ while True:
         if (fitness > 10000):
                 fitness = 10000
 
-        if args.publish:
+        if args.publish and fitness <= 200:
                 stable = table.getSubTable(targetName)
                 if not sd.putString(args.dashboardid + targetName, str(center)):
                 sd.delete(args.dashboardid)

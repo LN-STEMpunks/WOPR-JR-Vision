@@ -12,7 +12,17 @@
  16-64:
  * Functions for the game
  
- 
+ Wiring:
+
+Robot top down:
+
+SECTION|LENGTH
+
+    2|22  3|22
+
+
+
+    1|20  0|20
  
  */
 
@@ -36,7 +46,7 @@ byte subnet[] = {
 
 
 
-#define NUM_LEDS 51
+#define NUM_LEDS (20+20+22+22)
 #define DATA_PIN 6
 
 CRGB leds[NUM_LEDS];
@@ -267,6 +277,30 @@ void _width_18() {
 
   FastLED.show();
   delay(wait);
+}
+
+void _height_base(int offset, int len, int percent, CRGB pos, CRGB neg) {
+  for (int i = offset; i < offset + len; ++i) {
+    if (i < (20*percent)/100.0) {
+      leds[i] = pos;
+    } else {
+      leds[i] = neg;
+    }
+  }
+
+}
+
+void _height_19() {
+  CRGB colorPos = RGB_args(0, 1, 2);
+  CRGB colorNeg = RGB_args(3, 4, 5);
+  int percent = args[6];
+  
+  _height_base(0, 20, percent, colorPos, colorNeg);
+  _height_base(20, 20, percent, colorPos, colorNeg);
+  _height_base(40, 22, percent, colorPos, colorNeg);
+  _height_base(62, 22, percent, colorPos, colorNeg);
+
+  FastLED.show();
 }
 
 void _bubblesort_128() {
