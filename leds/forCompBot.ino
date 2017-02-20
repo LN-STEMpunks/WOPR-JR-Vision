@@ -36,11 +36,11 @@ byte subnet[] = {
 
 
 
-#define NUM_LEDS 150
+#define NUM_LEDS 51
 #define DATA_PIN 6
 
 CRGB leds[NUM_LEDS];
-#define BRIGHTNESS 255
+#define BRIGHTNESS 127
 
 
 int is_good = 0;
@@ -79,8 +79,10 @@ EthernetServer server = EthernetServer(5800);
 
 void setup() {
   Serial.begin(9600);
+  Serial.println("Serial start");
   Ethernet.begin(mac, ip, gateway, subnet);
   server.begin();
+  Serial.println("Ethernet start");
 
 
   LEDS.addLeds<WS2812, DATA_PIN, RGB>(leds, NUM_LEDS);
@@ -337,6 +339,9 @@ void parse_serial() {
 }
 
 void loop() {
+
+  Serial.println("Loop begin");
+  
 
   parse_serial();
 

@@ -4,7 +4,9 @@
 
 export VISIONREPO=/home/pi/WOPR-JR-Vision
 
-/usr/bin/env python ${VISIONREPO}/src/grip.py -f ${VISIONREPO}/lab.conf --publish &
+# Camera 0, and 1
+/usr/bin/env python ${VISIONREPO}/src/grip.py -f ${VISIONREPO}/comp.conf --publish -c 0 &
+/usr/bin/env python ${VISIONREPO}/src/grip.py -f ${VISIONREPO}/comp.conf --publish -c 1 &
 
 /usr/bin/env python ${VISIONREPO}/leds/interface.py &
 

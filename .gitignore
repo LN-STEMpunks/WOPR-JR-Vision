@@ -17,3 +17,8 @@
 # cpp executables
 *.out
 *.o
+
+
+# compressed
+*.tar*
+
