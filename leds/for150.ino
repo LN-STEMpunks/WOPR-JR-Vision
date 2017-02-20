@@ -36,11 +36,11 @@ byte subnet[] = {
 
 
 
-#define NUM_LEDS 150
+#define NUM_LEDS 51
 #define DATA_PIN 6
 
 CRGB leds[NUM_LEDS];
-#define BRIGHTNESS 120
+#define BRIGHTNESS 127
 
 
 int is_good = 0;
@@ -79,8 +79,10 @@ EthernetServer server = EthernetServer(5800);
 
 void setup() {
   Serial.begin(9600);
+  Serial.println("Serial start");
   Ethernet.begin(mac, ip, gateway, subnet);
   server.begin();
+  Serial.println("Ethernet start");
 
 
   LEDS.addLeds<WS2812, DATA_PIN, RGB>(leds, NUM_LEDS);
@@ -92,7 +94,6 @@ void setup() {
   functionArr[1] = _off_1;
   functionArr[2] = _on_2;
   functionArr[3] = _fade_3;
-  functionArr[4] = _onindex_4;
 
   functionArr[16] = _sweep_16;
   functionArr[17] = _cylon_17;
@@ -189,11 +190,6 @@ void _fade_3() {
   delay(delay_rate);
 }
 
-void _onindex_4() {
-  CRGB color = RGB_args(0, 1, 2);
-  leds[args[3]] = color;
-  FastLED.show();
-}
 
 void _sweep_16() {
 
@@ -344,6 +340,9 @@ void parse_serial() {
 
 void loop() {
 
+  Serial.println("Loop begin");
+  
+
   parse_serial();
 
   run_function();
@@ -353,5 +352,4 @@ void loop() {
   function_runs += 1;
   prev_func_id = func_id;
 }
-
 

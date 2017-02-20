@@ -46,7 +46,7 @@ byte subnet[] = {
 
 
 
-#define NUM_LEDS (20+20+22+22)
+#define NUM_LEDS (150)
 #define DATA_PIN 6
 
 CRGB leds[NUM_LEDS];
@@ -90,6 +90,9 @@ EthernetServer server = EthernetServer(5800);
 void setup() {
   Serial.begin(9600);
   Serial.println("Serial start");
+
+  delay(5000);
+
   Ethernet.begin(mac, ip, gateway, subnet);
   server.begin();
   Serial.println("Ethernet start");
@@ -108,6 +111,7 @@ void setup() {
   functionArr[16] = _sweep_16;
   functionArr[17] = _cylon_17;
   functionArr[18] = _width_18;
+  functionArr[19] = _height_19;
 
   functionArr[128] = _bubblesort_128;
 }
@@ -280,11 +284,21 @@ void _width_18() {
 }
 
 void _height_base(int offset, int len, int percent, CRGB pos, CRGB neg) {
-  for (int i = offset; i < offset + len; ++i) {
-    if (i < (20*percent)/100.0) {
-      leds[i] = pos;
-    } else {
-      leds[i] = neg;
+  if (len > 0) {
+    for (int i = offset; i < offset + len; i++) {
+      if (i < offset + (len*percent)/100.0) {
+        leds[i] = pos;
+      } else {
+        leds[i] = neg;
+      }
+    }
+  } else if (len < 0) {
+    for (int i = offset - len - 1; i >= offset; i--) {
+      if (i > (offset - len - 1) + (len*percent)/100.0) {
+        leds[i] = pos;
+      } else {
+        leds[i] = neg;
+      }
     }
   }
 
@@ -296,9 +310,9 @@ void _height_19() {
   int percent = args[6];
   
   _height_base(0, 20, percent, colorPos, colorNeg);
-  _height_base(20, 20, percent, colorPos, colorNeg);
-  _height_base(40, 22, percent, colorPos, colorNeg);
-  _height_base(62, 22, percent, colorPos, colorNeg);
+  _height_base(20, -20, percent, colorPos, colorNeg);
+  _height_base(40, -22, percent, colorPos, colorNeg);
+  _height_base(62, -22, percent, colorPos, colorNeg);
 
   FastLED.show();
 }
