@@ -202,17 +202,17 @@ while True:
                 goalContours, goalFitness = bestHighgoalFit(contours)
 
                 if pegContours and pegFitness < goalFitness and len(pegContours) >= 2:
-                contours = pegContours
-                fitness = pegFitness
-                targetName = "gearpeg"
+					contours = pegContours
+					fitness = pegFitness
+					targetName = "gearpeg"
 
                 if goalContours and goalFitness <= pegFitness and len(goalContours) >= 2:
-                contours = goalContours
-                fitness = goalFitness
-                targetName = "highgoal"
+					contours = goalContours
+					fitness = goalFitness
+					targetName = "highgoal"
 
                 if contours and len(contours) >= 2:
-                centers = [contourCenter(j) for j in contours]
+					centers = [contourCenter(j) for j in contours]
 
                 center = (int((centers[0][0] + centers[1][0])//2), int((centers[0][1] + centers[1][1])//2))
 
@@ -237,25 +237,25 @@ while True:
         if args.publish and fitness <= 200:
                 stable = table.getSubTable(targetName)
                 if not sd.putString(args.dashboardid + targetName, str(center)):
-                sd.delete(args.dashboardid)
-                print ("Couldn't publish to smart dashboard\n")
-                
-                worked = True
-                worked = worked and stable.putNumber("fitness", fitness)
+					sd.delete(args.dashboardid)
+					print ("Couldn't publish to smart dashboard\n")
+					
+					worked = True
+					worked = worked and stable.putNumber("fitness", fitness)
 
-                worked = worked and stable.putNumber("x", center[0])
-                worked = worked and stable.putNumber("y", center[1])
-                
-                worked = worked and stable.putNumber("fps", fps)
+					worked = worked and stable.putNumber("x", center[0])
+					worked = worked and stable.putNumber("y", center[1])
+					
+					worked = worked and stable.putNumber("fps", fps)
 
-                worked = worked and stable.putNumber("camfps", camfps)
-                worked = worked and stable.putNumber("camwidth", args.size[0])
-                worked = worked and stable.putNumber("camheight", args.size[1])
+					worked = worked and stable.putNumber("camfps", camfps)
+					worked = worked and stable.putNumber("camwidth", args.size[0])
+					worked = worked and stable.putNumber("camheight", args.size[1])
 
-                worked = worked and stable.putNumber("time", time.time())
+					worked = worked and stable.putNumber("time", time.time())
 
-                if not worked:
-                print ("Error while writing to table\n")
+					if not worked:
+						print ("Error while writing to table\n")
 
         sys.stdout.write ("center: (%03d, %03d) fitness: %05d fps: %3.1f camfps: %.1f   \r" % (center[0], center[1], int(fitness), fps, camfps))
         sys.stdout.flush()

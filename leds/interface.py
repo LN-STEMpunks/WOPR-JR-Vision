@@ -99,7 +99,8 @@ else:
             cw = stable.getNumber("camwidth")
             width = x_to_width(cw, x)
             print width
-            sendbytes(["18,0,255,0", str(int(width))])
+            #sendbytes(["18,0,255,0", str(int(width))])
+            sendbytes(["19,255,0,0,0,255,0", str(int(width))])
             #sendbytes(["18", "0", "255", "0", str(int(width)), DELAY])
             s.close()
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
