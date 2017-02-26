@@ -240,22 +240,22 @@ while True:
 					sd.delete(args.dashboardid)
 					print ("Couldn't publish to smart dashboard\n")
 					
-					worked = True
-					worked = worked and stable.putNumber("fitness", fitness)
+                worked = True
+                worked = worked and stable.putNumber("fitness", fitness)
 
-					worked = worked and stable.putNumber("x", center[0])
-					worked = worked and stable.putNumber("y", center[1])
-					
-					worked = worked and stable.putNumber("fps", fps)
+                worked = worked and stable.putNumber("x", center[0])
+                worked = worked and stable.putNumber("y", center[1])
+                
+                worked = worked and stable.putNumber("fps", fps)
 
-					worked = worked and stable.putNumber("camfps", camfps)
-					worked = worked and stable.putNumber("camwidth", args.size[0])
-					worked = worked and stable.putNumber("camheight", args.size[1])
+                worked = worked and stable.putNumber("camfps", camfps)
+                worked = worked and stable.putNumber("camwidth", args.size[0])
+                worked = worked and stable.putNumber("camheight", args.size[1])
 
-					worked = worked and stable.putNumber("time", time.time())
+                worked = worked and stable.putNumber("time", time.time())
 
-					if not worked:
-						print ("Error while writing to table\n")
+                if not worked:
+                    print ("Error while writing to table\n")
 
         sys.stdout.write ("center: (%03d, %03d) fitness: %05d fps: %3.1f camfps: %.1f   \r" % (center[0], center[1], int(fitness), fps, camfps))
         sys.stdout.flush()
