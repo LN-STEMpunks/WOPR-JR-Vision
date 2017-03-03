@@ -115,9 +115,9 @@ def bestPegFit(contours):
             diffarea = a1 / a2
             if diffarea < 1.0:
                 diffarea = 1.0 / diffarea
-        if diffangle > 18:
-            return float('inf')
-        return 20*diffangle + 50*diffratio + 120*diffarea + 20*fromcenter
+        #if diffangle > 18:
+        #    return float('inf')
+        return 50*abs(diffangle) + 50*diffratio + 120*diffarea + 20*fromcenter
     for i in range(0, len(contours)):
         ic = contourCenter(contours[i])
         ia = cv2.contourArea(contours[i])
@@ -140,8 +140,6 @@ def bestHighgoalFit(contours):
     def fitness(c1, c2, a1, a2):
         diff = subPoint(c1, c2)
         diffangle = math.degrees(abs(math.atan2(diff[1], diff[0])))
-        if diffangle > 90:
-            diffangle = abs((180 - diffangle)-90)
         if diff[0] == 0:
             diffratio = 0
         else:
@@ -152,9 +150,8 @@ def bestHighgoalFit(contours):
             diffarea = a1 / a2
             if diffarea < 1.0:
                 diffarea = 1.0 / diffarea
-        if diffangle > 18:
-            return float('inf')
-        return 30*diffangle + 60*diffratio + 120*diffarea
+        #return 10
+        return 10*abs(diffangle - 90) + 20*diffratio + 20*diffarea
     for i in range(0, len(contours)):
         ic = contourCenter(contours[i])
         ia = cv2.contourArea(contours[i])
@@ -257,7 +254,7 @@ while True:
                 if not worked:
                     print ("Error while writing to table\n")
 
-        sys.stdout.write ("center: (%03d, %03d) fitness: %05d fps: %3.1f camfps: %.1f   \r" % (center[0], center[1], int(fitness), fps, camfps))
+        sys.stdout.write ("target: %s; center: (%03d, %03d) fitness: %05d fps: %3.1f camfps: %.1f   \r" % (targetName, center[0], center[1], int(fitness), fps, camfps))
         sys.stdout.flush()
     except Exception:
         time.sleep(1.0)
