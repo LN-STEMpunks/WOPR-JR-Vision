@@ -15,6 +15,7 @@ parser.add_argument('-ip', '--address', type=str, default="roboRIO-3966-frc.loca
 parser.add_argument('-aip', '--arduinoaddress', type=str, default="10.39.66.177:5800", help='arduino address')
 parser.add_argument('-t', '--table', type=str, default="vision", help='networktables table')
 parser.add_argument('-n', '--numbytes', type=int, default=(4 * 3 + 4), help='number of bytes expected')
+parser.add_argument('-s', '--serial', type=str, default="/dev/ttyACM0", help='serial port')
 
 args = parser.parse_args()
 
@@ -24,15 +25,53 @@ port = int(args.arduinoaddress.split(":")[1])
 
 # enough for 4 colors, 4 args, and a function
 NUM_ARGS = (4 * 3 + 4) + 1
+
+
 s = None
-while s is None:
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((host, port))
-    except:
+
+def close():
+    if args.serial != "":
         s.close()
-        s = None
-        time.sleep(1.0)
+    else:
+        s.close()
+    s = None
+
+def connect():
+    if args.serial != "":
+        import serial
+        global s
+        while s is None:
+            try:
+
+                s = serial.Serial(
+                    port=args.serial,
+                    baudrate=9600,
+                    parity=serial.PARITY_NONE,
+                    stopbits=serial.STOPBITS_ONE,
+                    bytesize=serial.EIGHTBITS,
+                    xonxoff=serial.XOFF,
+                    rtscts=False,
+                    dsrdtr=False
+                )
+
+                s.open()
+                #s.isOpen()
+            except Exception as e:
+                print str(e)
+                s.close()
+                s = None
+                time.sleep(1.0)
+    else:
+        while s is None:
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((host, port))
+            except:
+                s.close()
+                s = None
+                time.sleep(1.0)
+
+connect()
 
 CYLON_FUNC_ID = "17"
 COLOR_BAR = "0,255,0"
@@ -58,7 +97,10 @@ def sendbytes(byte_send):
         #print ("ERROR: you entered less bytes than expected (expected {0}, got {1})".format(NUM_ARGS, len(byte_send)))
         byte_send = byte_send + [0] * (NUM_ARGS - len(byte_send))
 
-    s.send(bytearray(byte_send))
+    if(args.serial != ""):
+        s.write(bytearray(byte_send))
+    else:
+        s.send(bytearray(byte_send))
     # s.close()
     return bytearray(byte_send)
 
@@ -102,12 +144,16 @@ else:
             #sendbytes(["18,0,255,0", str(int(width))])
             sendbytes(["19,255,0,0,0,255,0", str(int(width))])
             #sendbytes(["18", "0", "255", "0", str(int(width)), DELAY])
-            s.close()
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((host, port))
+            close()
+            connect()
+            # s.close()
+            # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # s.connect((host, port))
         except:
-            s.close()
-            time.sleep(.25)
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((host, port))
+            close()
+            connect()
+            # s.close()
+            # time.sleep(.25)
+            # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # s.connect((host, port))
         time.sleep(.1)

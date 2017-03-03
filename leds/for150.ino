@@ -77,10 +77,17 @@ void run_function() {
 
 EthernetServer server = EthernetServer(5800);
 
+// uncomment to connect instantly
+#define WAITONDELAY (1000)
+
 void setup() {
+  #ifdef WAITONDELAY
+    delay(WAITONDELAY);
+  #endif
+
   Serial.begin(9600);
   Serial.println("Serial start");
-  Ethernet.begin(mac, ip, gateway, subnet);
+
   server.begin();
   Serial.println("Ethernet start");
 
