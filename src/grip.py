@@ -115,9 +115,9 @@ def bestPegFit(contours):
             diffarea = a1 / a2
             if diffarea < 1.0:
                 diffarea = 1.0 / diffarea
-        if diffangle > 18:
-            return float('inf')
-        return 20*diffangle + 50*diffratio + 120*diffarea + 20*fromcenter
+        #if diffangle > 18:
+        #    return float('inf')
+        return 50*abs(diffangle) + 50*diffratio + 120*diffarea + 20*fromcenter
     for i in range(0, len(contours)):
         ic = contourCenter(contours[i])
         ia = cv2.contourArea(contours[i])
@@ -140,8 +140,6 @@ def bestHighgoalFit(contours):
     def fitness(c1, c2, a1, a2):
         diff = subPoint(c1, c2)
         diffangle = math.degrees(abs(math.atan2(diff[1], diff[0])))
-        if diffangle > 90:
-            diffangle = abs((180 - diffangle)-90)
         if diff[0] == 0:
             diffratio = 0
         else:
@@ -152,9 +150,8 @@ def bestHighgoalFit(contours):
             diffarea = a1 / a2
             if diffarea < 1.0:
                 diffarea = 1.0 / diffarea
-        if diffangle > 18:
-            return float('inf')
-        return 30*diffangle + 60*diffratio + 120*diffarea
+        #return 10
+        return 10*abs(diffangle - 90) + 20*diffratio + 20*diffarea
     for i in range(0, len(contours)):
         ic = contourCenter(contours[i])
         ia = cv2.contourArea(contours[i])
@@ -177,6 +174,7 @@ st, et = 0, 0
 camst, camet = 0, 0
 
 import time
+pegFitness, goalFitness = (0, 0)
 
 while True:
     try:
@@ -195,33 +193,35 @@ while True:
                 contours = []
 
         center = (-1, -1)
+        try:
+            if len(contours) >= 2:
+                    contours = [j for j in largestContours(contours, 4)]
+                    pegContours, pegFitness = bestPegFit(contours)
+                    goalContours, goalFitness = bestHighgoalFit(contours)
 
-        if len(contours) >= 2:
-                contours = [j for j in largestContours(contours, 4)]
-                pegContours, pegFitness = bestPegFit(contours)
-                goalContours, goalFitness = bestHighgoalFit(contours)
+                    if pegContours and pegFitness < goalFitness and len(pegContours) >= 2:
+                        contours = pegContours
+                        fitness = pegFitness
+                        targetName = "gearpeg"
 
-                if pegContours and pegFitness < goalFitness and len(pegContours) >= 2:
-					contours = pegContours
-					fitness = pegFitness
-					targetName = "gearpeg"
+                    if goalContours and goalFitness and goalFitness <= pegFitness and len(goalContours) >= 2:
+                        contours = goalContours
+                        fitness = goalFitness
+                        targetName = "highgoal"
 
-                if goalContours and goalFitness <= pegFitness and len(goalContours) >= 2:
-					contours = goalContours
-					fitness = goalFitness
-					targetName = "highgoal"
+                    if contours and len(contours) >= 2:
+                        centers = [contourCenter(j) for j in contours]
 
-                if contours and len(contours) >= 2:
-					centers = [contourCenter(j) for j in contours]
+                    center = (int((centers[0][0] + centers[1][0])//2), int((centers[0][1] + centers[1][1])//2))
 
-                center = (int((centers[0][0] + centers[1][0])//2), int((centers[0][1] + centers[1][1])//2))
-
-                if args.show:
-                        cv2.drawContours(outputim,contours, 0, (255, 120, 0), 2)
-                        cv2.drawContours(outputim,contours, 1, (255, 120, 0), 2)
-                        cv2.line(outputim, addPoint(center, (0, -4)), addPoint(center, (0, 4)), (0, 0, 255), 1)
-                        cv2.line(outputim, addPoint(center, (-4, 0)), addPoint(center, (4, 0)), (0, 0, 255), 1)
-                        cv2.circle(outputim, center, 5, (0, 0, 255), 1)
+                    if args.show:
+                            cv2.drawContours(outputim,contours, 0, (255, 120, 0), 2)
+                            cv2.drawContours(outputim,contours, 1, (255, 120, 0), 2)
+                            cv2.line(outputim, addPoint(center, (0, -4)), addPoint(center, (0, 4)), (0, 0, 255), 1)
+                            cv2.line(outputim, addPoint(center, (-4, 0)), addPoint(center, (4, 0)), (0, 0, 255), 1)
+                            cv2.circle(outputim, center, 5, (0, 0, 255), 1)
+        except Exception as e:
+            print str(e)
 
         if args.show: cv2.imshow('img', outputim)
         
@@ -257,8 +257,9 @@ while True:
                 if not worked:
                     print ("Error while writing to table\n")
 
-        sys.stdout.write ("center: (%03d, %03d) fitness: %05d fps: %3.1f camfps: %.1f   \r" % (center[0], center[1], int(fitness), fps, camfps))
+        sys.stdout.write ("pegf: %05d, goalf: %05d, target: %s; center: (%03d, %03d) fitness: %05d fps: %3.1f camfps: %.1f   \r" % (int(pegFitness), int(goalFitness), targetName, center[0], center[1], int(fitness), fps, camfps))
         sys.stdout.flush()
-    except Exception:
+    except Exception as e:
+        print str(e)
         time.sleep(1.0)
         pass
