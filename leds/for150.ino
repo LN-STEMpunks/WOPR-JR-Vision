@@ -34,7 +34,18 @@ byte gateway[] = {
 byte subnet[] = { 
   255, 255, 255, 0 };
 
+#if defined(ARDUINO_AVR_UNO)       
+    #define BOARD "Uno"
+    #define IS_ETHERNET 0
+    #define IS_SERIAL 1
+#elif defined(ARDUINO_AVR_ETHERNET)       
+    #define BOARD "Ethernet"
+    #define IS_ETHERNET 1
+    #define IS_SERIAL 0
+#endif
 
+// uncomment to connect instantly
+#define WAITONDELAY (1000)
 
 #define NUM_LEDS 51
 #define DATA_PIN 6
@@ -63,7 +74,7 @@ int vars[10];
 String inputString = "";        // a string to hold incoming data
 boolean stringComplete = false; // whether the string is complete
 
-int isEthernet = 0;
+int isEthernet = IS_ETHERNET;
 EthernetServer server = EthernetServer(5800);
 
 char startChar = 'A';
@@ -84,9 +95,6 @@ void (*functionArr[MAX_FUNC])();
 void run_function() {
   (*functionArr[func_id])(); //calls the function at the index of `index` in the array
 }
-
-// uncomment to connect instantly
-#define WAITONDELAY (1000)
 
 void setup() {
 
