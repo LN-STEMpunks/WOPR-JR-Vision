@@ -1,9 +1,8 @@
 import socket
 import pickle
 import sys
-
+import serial
 import time
-
 import argparse
 
 parser = argparse.ArgumentParser(description='WOPR-JR LED interface')
@@ -14,6 +13,8 @@ parser.add_argument('-ip', '--address', type=str, default="roboRIO-3966-frc.loca
 parser.add_argument('-aip', '--arduinoaddress', type=str, default="10.39.66.177:5800", help='arduino address')
 parser.add_argument('-t', '--table', type=str, default="vision", help='networktables table')
 parser.add_argument('-n', '--numbytes', type=int, default=(4 * 3 + 4), help='number of bytes expected')
+parser.add_argument('-s', '--serial', type=str, help='serial port to arduino')
+parser.add_argument('-baud', '--baud', type=int, default=38400, help='serial baud')
 
 args = parser.parse_args()
 
@@ -23,13 +24,32 @@ port = int(args.arduinoaddress.split(":")[1])
 
 # enough for 4 colors, 4 args, and a function
 NUM_ARGS = (4 * 3 + 4) + 1
+
 s = None
-while s is None:
-    try:
+
+def connect():
+    global s
+    if args.serial :
+        print "connecting serial", args.serial, args.baud
+        s = serial.Serial(args.serial, args.baud, timeout=1)
+        #give the arduino time to wake up
+        time.sleep(2)
+    else :
+        print "connecting ethernet"
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
-    except:
+
+def close():
+    if s :
         s.close()
+        
+while s is None:
+    try:
+        connect()
+    except Exception as e: 
+        print str(e)
+        print 'exception in opening, waiting for retry'
+        close()
         s = None
         time.sleep(1.0)
 
@@ -44,21 +64,29 @@ MAX_WIDTH = 150
 
 
 def sendbytes(byte_send):
-    #s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #s.connect((host, port))
-    byte_send = ",".join(byte_send).split(",")
-    byte_send = map(int, byte_send)
+    if args.serial :
+        byte_send = ",".join(byte_send)
+        # serial protocol uses the A to start and Z to end the packets. add them if not already there
+        if byte_send.startswith("A") == False:
+            byte_send = "A" + byte_send
+        if byte_send.endswith("Z") == False:
+            byte_send = byte_send + "Z"
+        s.write(byte_send)
+        # we call readline() because arduino seems to overrun its buffer if you don't read from it sometimes
+        s.readline()
+    else:  
+        byte_send = ",".join(byte_send).split(",")
+        byte_send = map(int, byte_send)
 
-    if len(byte_send) > NUM_ARGS:
-        #print ("ERROR: you entered more bytes than expected (expected {0}, got {1})".format(NUM_ARGS, len(byte_send)))
-        byte_send = byte_send[0:NUM_ARGS]
+        if len(byte_send) > NUM_ARGS:
+            #print ("ERROR: you entered more bytes than expected (expected {0}, got {1})".format(NUM_ARGS, len(byte_send)))
+            byte_send = byte_send[0:NUM_ARGS]
 
-    if len(byte_send) < NUM_ARGS:
-        #print ("ERROR: you entered less bytes than expected (expected {0}, got {1})".format(NUM_ARGS, len(byte_send)))
-        byte_send = byte_send + [0] * (NUM_ARGS - len(byte_send))
+        if len(byte_send) < NUM_ARGS:
+            #print ("ERROR: you entered less bytes than expected (expected {0}, got {1})".format(NUM_ARGS, len(byte_send)))
+            byte_send = byte_send + [0] * (NUM_ARGS - len(byte_send))
 
-    s.send(bytearray(byte_send))
-    # s.close()
+        s.send(bytearray(byte_send))
     return bytearray(byte_send)
 
 if len(args.bytes) > 0:

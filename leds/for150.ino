@@ -60,6 +60,16 @@ int func_id, function_runs, prev_func_id;
 #define MAX_VARS 10
 int vars[10];
 
+String inputString = "";        // a string to hold incoming data
+boolean stringComplete = false; // whether the string is complete
+
+int isEthernet = 0;
+EthernetServer server = EthernetServer(5800);
+
+char startChar = 'A';
+char endChar = 'Z';
+String bufferString = "";
+int MAX_BUFF_SIZE = 200;
 
 CRGB nothing = CRGB(0,0,0);
 CRGB red = CRGB(0,255,0);
@@ -75,22 +85,23 @@ void run_function() {
   (*functionArr[func_id])(); //calls the function at the index of `index` in the array
 }
 
-EthernetServer server = EthernetServer(5800);
-
 // uncomment to connect instantly
 #define WAITONDELAY (1000)
 
 void setup() {
-  #ifdef WAITONDELAY
-    delay(WAITONDELAY);
-  #endif
 
-  Serial.begin(9600);
+  Serial.begin(38400);
   Serial.println("Serial start");
 
-  server.begin();
-  Serial.println("Ethernet start");
-
+  if (isEthernet > 0)
+  {
+#ifdef WAITONDELAY
+    delay(WAITONDELAY);
+#endif
+    Ethernet.begin(mac, ip, gateway, subnet);    
+    server.begin();
+    Serial.println("Ethernet start");
+  }
 
   LEDS.addLeds<WS2812, DATA_PIN, RGB>(leds, NUM_LEDS);
   LEDS.setBrightness(BRIGHTNESS);
@@ -312,8 +323,64 @@ void _bubblesort_128() {
 }
 
 
+void parse_serial()
+{
+  char separator[] = ",";
+  char *token;
+  int argc = 0;
 
-void parse_serial() {
+  if (stringComplete)
+  {
+    String token;
+    token = getValue(inputString, ',', 0);
+    int new_func_id = 0;
+    if (token != NULL && token != "")
+    {
+      new_func_id = token.toInt();
+      if (new_func_id < 0 || new_func_id >= MAX_FUNC)
+      {
+        return;
+      }
+      for (int i = 0; i < NUM_ARGS; ++i)
+      {
+        token = getValue(inputString, ',', i + 1); //offset by 1 for func_id
+        if (token != NULL && token != "")
+        {
+          args[i] = token.toInt();
+        }
+        else
+        {
+          args[i] = 0;
+        }
+      }
+
+      func_id = new_func_id;
+      Serial.print("func_id=");
+      Serial.print(func_id);
+
+      for (int i = 0; i < NUM_ARGS; ++i)
+      {
+        Serial.print(", ");
+        Serial.print(i);
+        Serial.print(" = ");
+        Serial.print(args[i]);
+      }
+      Serial.println("");
+
+      if (func_id != prev_func_id)
+      {
+        Serial.println("changed function");
+        Serial.println(inputString);
+        function_runs = 0;
+      }
+    }
+
+    inputString = "";
+  }
+}
+
+void parse_ethernet()
+{
   EthernetClient client = server.available();
   if (client == true ) {
     int bytesAvail = client.available();
@@ -345,12 +412,75 @@ void parse_serial() {
   }
 }
 
+
+String getValue(String data, char separator, int index)
+{
+  int found = 0;
+  int strIndex[] = {0, -1};
+  int maxIndex = data.length() - 1;
+
+  for (int i = 0; i <= maxIndex && found <= index; i++)
+  {
+    if (data.charAt(i) == separator || i == maxIndex)
+    {
+      found++;
+      strIndex[0] = strIndex[1] + 1;
+      strIndex[1] = (i == maxIndex) ? i + 1 : i;
+    }
+  }
+
+  return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
+
+void readSerialData()
+{
+  while (Serial.available())
+  {
+    // get the new byte:
+
+    char inChar = (char)Serial.read();
+    if (inChar <= 0)
+    {
+      return;
+    }
+    if (inChar == startChar)
+    {
+      stringComplete = false;
+      bufferString = "";
+    }
+    else if (inChar == endChar)
+    {
+      inputString = bufferString;
+      stringComplete = true;
+      bufferString = "";
+      return;
+    }
+    else
+    {
+      // add it to the bufferString:
+      stringComplete = false;
+      bufferString += inChar;
+      if (bufferString.length() >= MAX_BUFF_SIZE)
+      {
+        bufferString = "";
+      }
+    }
+  }
+}
+
 void loop() {
 
-  Serial.println("Loop begin");
+  //Serial.println("Loop begin");
   
-
-  parse_serial();
+  if (isEthernet > 0)
+  {
+    parse_ethernet();
+  }
+  else
+  {
+    readSerialData();
+    parse_serial();
+  }
 
   run_function();
 
