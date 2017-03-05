@@ -4,7 +4,8 @@ import time
 from random import randint
 
 NUM_ARGS = (4 * 3 + 4) + 1
-ser = serial.Serial('COM7', 38400, timeout=1)
+#ser = serial.Serial('COM7', 38400, timeout=1)
+ser = serial.Serial('/dev/ttyACM0', 38400, timeout=1)
 
 #give the arduino time to wake up
 time.sleep(2)
