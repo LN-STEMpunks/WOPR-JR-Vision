@@ -129,12 +129,13 @@ else:
             #sendbytes(["18,0,255,0", str(int(width))])
             sendbytes(["19,255,0,0,0,255,0", str(int(width))])
             #sendbytes(["18", "0", "255", "0", str(int(width)), DELAY])
-            s.close()
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((host, port))
+            if args.serial:
+                time.sleep(0.001)
+            else:
+                close()
+                connect()
         except:
-            s.close()
+            close()
             time.sleep(.25)
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((host, port))
+            connect()
         time.sleep(.1)
