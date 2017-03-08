@@ -18,6 +18,17 @@ parser.add_argument('-baud', '--baud', type=int, default=38400, help='serial bau
 
 args = parser.parse_args()
 
+RED="150,0,0"
+BLUE="0,0,150"
+
+def getColorFromEnum(enum):
+	enum = int(enum)
+	if enum == 0
+		return RED
+	elif enum == 1:
+		return BLUE
+	else:
+		return "50, 50, 500"
 
 host = args.arduinoaddress.split(":")[0]
 port = int(args.arduinoaddress.split(":")[1])
@@ -97,7 +108,7 @@ else:
     from networktables import NetworkTables
     NetworkTables.initialize(server=args.address)
     table = NetworkTables.getTable(args.table)
-
+	infotable = NetworkTables.getTable("info")
     time.sleep(.5)
 
     def fitness_to_width(fit):
@@ -127,7 +138,7 @@ else:
             width = x_to_width(cw, x)
             print width
             #sendbytes(["18,0,255,0", str(int(width))])
-            sendbytes(["19,255,0,0,0,255,0", str(int(width))])
+            sendbytes(["19", getColorFromEnum(infotable.getNumber("color"), "100,0,100", int(width))])
             #sendbytes(["18", "0", "255", "0", str(int(width)), DELAY])
             if args.serial:
                 time.sleep(0.001)
