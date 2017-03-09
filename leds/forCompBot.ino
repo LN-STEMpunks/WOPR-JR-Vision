@@ -413,6 +413,8 @@ void _sin_21() {
 
   _sin_base(col, vars[0], 0, 20);
   _sin_base(col, vars[0], 39, 19);
+  _sin_base(col, vars[0], 62, 39);
+  _sin_base(col, vars[0], 84, 62);
   vars[0] = (vars[0] + 1) % 360;
 
   FastLED.show();

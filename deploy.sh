@@ -8,13 +8,16 @@ mkdir -p $TMPDIR
 
 cd $TMPDIR
 
-cp -Rf $FROMDIR/* ./
+echo $TMPDIR
+cp -R $FROMDIR/* ./
+echo $TMPDIR
 
 rm -rf .git
 rm *.tar*
 
 cd ..
 
+echo "Tarring"
 tar cfJ $FOLDER.tar.xz $FOLDER
 
 cd $FROMDIR

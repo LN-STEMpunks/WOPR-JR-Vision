@@ -142,7 +142,7 @@ else:
 
 
             if time.time() - lastTimeChanged > 4:
-                sendbytes(["19", getColorFromEnum(infotable.getNumber("color"), "100,0,100", int(width))])
+                sendbytes(["21", getColorFromEnum(infotable.getNumber("color")), "10"])
 
             else:
                 if goalTime > pegTime:
@@ -153,7 +153,6 @@ else:
                 x = stable.getNumber("x")
                 cw = stable.getNumber("camwidth")
                 width = x_to_width(cw, x)
-                print width
                 #sendbytes(["18,0,255,0", str(int(width))])
                 sendbytes(["19", getColorFromEnum(infotable.getNumber("color"), "100,0,100", int(width))])
                 #sendbytes(["18", "0", "255", "0", str(int(width)), DELAY])

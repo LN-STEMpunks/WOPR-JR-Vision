@@ -142,11 +142,14 @@ def init_camera():
     camera.set(3,args.size[0])
     camera.set(4,args.size[1])
 
-
+num = 0
 def get_image():
+    global num
     global im
     global retval
-    retval, im = camera.read()
+    #retval, im = camera.read()
+    im, retval = cv2.imread(".tmp/%d.png" % (num)), 1
+    num += 1
     while im is None or not retval:
         print retval
         time.sleep(1)
@@ -193,48 +196,12 @@ def bestPegFit(contours):
 
     return (tuple([contours[i] for i in min_indexes]), min_fitness)
 
-def bestHighgoalFit(contours):
-    import math
-    min_indexes = (-1, -1)
-    min_fitness = float('inf')
-    def fitness(c1, c2, a1, a2):
-        diff = subPoint(c1, c2)
-        diffangle = math.degrees(abs(math.atan2(diff[1], diff[0])))
-        if diff[0] == 0:
-            diffratio = 0
-        else:
-            diffratio = abs(float(diff[1]) / diff[0])
-        if 0 in [a1, a2]:
-            diffarea = 0
-        else:
-            diffarea = a1 / a2
-            if diffarea < 1.0:
-                diffarea = 1.0 / diffarea
-        #return 10
-        return 10*abs(diffangle - 90) + 20*diffratio + 20*diffarea
-    for i in range(0, len(contours)):
-        ic = contourCenter(contours[i])
-        ia = cv2.contourArea(contours[i])
-        for j in range(i+1, len(contours)):
-            jc = contourCenter(contours[j])
-            ja = cv2.contourArea(contours[j])
-            fit = fitness(jc, ic, ja, ia)
-            if fit < min_fitness:
-                min_indexes = (i, j)
-                min_fitness = fit
-    if -1 in min_indexes:
-        return (None, float('inf'))
-
-    return (tuple([contours[i] for i in min_indexes]), min_fitness)
-
-
-
 init_camera()
 st, et = 0, 0
 camst, camet = 0, 0
 
 import time
-pegFitness, goalFitness = (0, 0)
+pegFitness = 0
 
 while True:
     try:
@@ -256,18 +223,7 @@ while True:
         try:
             if len(contours) >= 2:
                     contours = [j for j in largestContours(contours, 4)]
-                    pegContours, pegFitness = bestPegFit(contours)
-                    goalContours, goalFitness = bestHighgoalFit(contours)
-
-                    if pegContours and pegFitness < goalFitness and len(pegContours) >= 2:
-                        contours = pegContours
-                        fitness = pegFitness
-                        targetName = "gearpeg"
-
-                    if goalContours and goalFitness and goalFitness <= pegFitness and len(goalContours) >= 2:
-                        contours = goalContours
-                        fitness = goalFitness
-                        targetName = "highgoal"
+                    contours, fitness = bestPegFit(contours)
 
                     if contours and len(contours) >= 2:
                         centers = [contourCenter(j) for j in contours]
@@ -294,7 +250,7 @@ while True:
         if (fitness > 10000):
                 fitness = 10000
 
-        if args.publish and fitness <= 200:
+        if args.publish:
                 stable = table.getSubTable(targetName)
                 if not sd.putString(args.dashboardid + targetName, str(center)):
 					sd.delete(args.dashboardid)
@@ -317,7 +273,7 @@ while True:
                 if not worked:
                     print ("Error while writing to table\n")
 
-        sys.stdout.write ("pegf: %05d, goalf: %05d, target: %s; center: (%03d, %03d) fitness: %05d fps: %3.1f camfps: %.1f   \r" % (int(pegFitness), int(goalFitness), targetName, center[0], center[1], int(fitness), fps, camfps))
+        sys.stdout.write ("center: (%03d, %03d) fitness: %05d fps: %3.1f camfps: %.1f   \r" % (center[0], center[1], int(fitness), fps, camfps))
         sys.stdout.flush()
     except Exception as e:
         print str(e)
