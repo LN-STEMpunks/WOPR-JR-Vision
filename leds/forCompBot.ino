@@ -52,6 +52,11 @@ byte subnet[] = {
     #define BOARD "Ethernet"
     #define IS_ETHERNET 1
     #define IS_SERIAL 0
+#else
+    #define BOARD "Unknown"
+    #define IS_ETHERNET 0
+    // assume serial
+    #define IS_SERIAL 1
 #endif
 
 // uncomment to connect instantly
@@ -107,7 +112,7 @@ void run_function() {
 }
 
 void setup() {
-  Serial.begin(38400);
+  Serial.begin(9600);
   Serial.println("Serial start");
 
   if (isEthernet > 0)
@@ -135,6 +140,8 @@ void setup() {
   functionArr[17] = _cylon_17;
   functionArr[18] = _width_18;
   functionArr[19] = _height_19;
+  functionArr[20] = _ambiant_20;
+  functionArr[21] = _sin_21;
 
   functionArr[128] = _bubblesort_128;
 }
@@ -338,6 +345,78 @@ void _height_19() {
   _height_base(62, -22, percent, colorPos, colorNeg);
 
   FastLED.show();
+}
+
+void _20_base(CRGB c0, CRGB c1, int off, int start, int stop) {
+  int step = (stop > start) ? 1 : -1;
+  int i = start;
+  while (i != stop) {
+    if (i > start + step * off) {
+      leds[i] = c1;
+    } else {
+      leds[i] = c0;
+    }
+    i += step;
+  }
+} 
+
+void _ambiant_20() {
+  CRGB col0 = RGB_args(0, 1, 2);
+  CRGB col1 = RGB_args(3, 4, 5);
+  int delayv = args[6];
+  int fadev = args[7];
+  if (function_runs == 0) {
+    vars[0] = 0;
+    vars[1] = 0;
+    vars[2] = 0;
+    vars[3] = 0;
+  }
+  _20_base(col0, col1, vars[0], 0, 20);
+  _20_base(col0, col1, vars[1], 39, 19);
+  _20_base(col0, col1, 2+vars[2], 61, 39);
+  _20_base(col0, col1, 2+vars[3], 82, 60);
+
+  vars[0] = (vars[0] + 1) % 20;
+  vars[1] = (vars[1] + 1) % 20;
+  vars[2] = (vars[2] + 1) % 20;
+  vars[3] = (vars[3] + 1) % 20;
+  FastLED.show();
+  fade(fadev);
+  delay(delayv);
+}
+
+void _sin_base(CRGB col, int deg, int start, int stop) {
+  int stp = (stop > start) ? 1 : -1;
+  int range = (stop - start) * stp, mid = start + (stop - start)/2;
+  double x = range * sin(stp * deg * 3.1415926535 / 180.0);
+  int i = start;
+  CRGB ctw;
+  while (i != stop) {
+    int towrite = 255-(int)(255 * abs(x - (i - mid)) / (2.0*range));
+    towrite = (towrite * towrite) / 255;
+
+    ctw = col;
+    ctw.r = scale8(ctw.r, towrite);
+    ctw.g = scale8(ctw.g, towrite);
+    ctw.b = scale8(ctw.b, towrite);
+    leds[i] = ctw;
+    i += stp;
+  }
+}
+
+void _sin_21() {
+  CRGB col = RGB_args(0, 1, 2);
+  int delayv = args[3];
+  if (function_runs == 0) {
+    vars[0] = 0;
+  }
+
+  _sin_base(col, vars[0], 0, 20);
+  _sin_base(col, vars[0], 39, 19);
+  vars[0] = (vars[0] + 1) % 360;
+
+  FastLED.show();
+  delay(delayv);
 }
 
 void _bubblesort_128() {
