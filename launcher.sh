@@ -5,7 +5,7 @@
 export VISIONREPO=/home/pi/WOPR-JR-Vision
 
 # Camera 0, and 1
-/usr/bin/env python ${VISIONREPO}/src/grip.py -f ${VISIONREPO}/lab.conf --publish -c 0 &
+/usr/bin/env python ${VISIONREPO}/src/grip.py -mjpg -f ${VISIONREPO}/lab.conf --publish -c 0 &
 /usr/bin/env python ${VISIONREPO}/src/grip.py -f ${VISIONREPO}/lab.conf --publish -c 1 &
 
 #Use this for serial connection to arduino UNO

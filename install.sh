@@ -9,6 +9,8 @@ fi
 apt install libopencv-dev
 apt install python-opencv
 apt install v4l-utils
+#apt install python-pip
+#pip install flask
 
 # todo test
 yum install numpy "opencv*"

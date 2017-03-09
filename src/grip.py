@@ -9,6 +9,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
 parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
+parser.add_argument('-mjpg', '--mjpg', default=None, type=int, help='do mjpg stream on what port')
 parser.add_argument('-show', '--show', action='store_true', help='show processed image')
 parser.add_argument('-p', '--publish', action='store_true', help='publish to networktables')
 parser.add_argument('-ip', '--address', type=str, default="roboRIO-3966-frc.local", help='network tables address')
@@ -23,6 +24,12 @@ args = parser.parse_args()
 # sets our preferences
 exec(open(args.file).read())
 
+
+camera = None
+im = None
+retval = None
+
+
 def addPoint(p1, p2):
     return (p1[0]+p2[0], p1[1]+p2[1])
 def subPoint(p1, p2):
@@ -33,6 +40,59 @@ if args.publish:
     NetworkTables.initialize(server=args.address)
     sd = NetworkTables.getTable("SmartDashboard")
     table = NetworkTables.getTable(args.table)
+
+if args.mjpg:
+    import Image
+    import threading
+    from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+    from SocketServer import ThreadingMixIn
+    import StringIO
+    import time
+
+    class CamHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if True:
+                self.send_response(200)
+                self.send_header('Content-type','multipart/x-mixed-replace; boundary=--jpgboundary')
+                self.end_headers()
+                while True:
+                    try:
+                        #rc,img = capture.read()
+                        if not retval:
+                            continue
+                        #imgRGB=cv2.cvtColor(im,cv2.COLOR_BGR2RGB)
+                        jpg = Image.fromarray(im)
+                        tmpFile = StringIO.StringIO("0.mjpg")
+                        jpg.save(tmpFile,'JPEG')
+                        self.wfile.write("--jpgboundary")
+                        self.send_header('Content-type','image/jpeg')
+                        self.send_header('Content-length',str(tmpFile.len))
+                        self.end_headers()
+                        jpg.save(self.wfile,'JPEG')
+                        time.sleep(0.05)
+                    except KeyboardInterrupt:
+                        break
+                return
+            if self.path.endswith('.html'):
+                self.send_response(200)
+                self.send_header('Content-type','text/html')
+                self.end_headers()
+                self.wfile.write('<html><head></head><body>')
+                self.wfile.write('<img src="http://127.0.0.1:8080/cam.mjpg"/>')
+                self.wfile.write('</body></html>')
+                return
+
+
+    class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+        """Handle requests in a separate thread."""
+
+    global im
+    global retval
+    server = ThreadedHTTPServer(('0.0.0.0', args.mjpg), CamHandler)
+    print "server started"
+    #server.serve_forever()
+    pthread = threading.Thread(target=server.serve_forever)
+    pthread.start()
 
 
 def contourCenter(contour):
@@ -61,8 +121,6 @@ def process(source0):
     contours, hier = cv2.findContours(source0, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
     return contours
 
-camera = None
-
 def set_exposure(ex):
     import os
     cmd = "v4l2-ctl -d /dev/video%d -c exposure_auto=1 -c exposure_absolute=%s" % (args.camera, str(ex))
@@ -84,7 +142,10 @@ def init_camera():
     camera.set(3,args.size[0])
     camera.set(4,args.size[1])
 
+
 def get_image():
+    global im
+    global retval
     retval, im = camera.read()
     while im is None or not retval:
         print retval
@@ -92,7 +153,6 @@ def get_image():
         init_camera()
         retval, im = camera.read()
     return im
-
 
 
 def bestPegFit(contours):
