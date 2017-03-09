@@ -62,7 +62,7 @@ if args.mjpg:
                             continue
                         #imgRGB=cv2.cvtColor(im,cv2.COLOR_BGR2RGB)
                         jpg = Image.fromarray(im)
-                        tmpFile = StringIO.StringIO("0.mjpg")
+                        tmpFile = StringIO.StringIO()
                         jpg.save(tmpFile,'JPEG')
                         self.wfile.write("--jpgboundary")
                         self.send_header('Content-type','image/jpeg')
