@@ -23,7 +23,7 @@ BLUE="0,0,150"
 
 def getColorFromEnum(enum):
 	enum = int(enum)
-	if enum == 0
+	if enum == 0:
 		return RED
 	elif enum == 1:
 		return BLUE
@@ -108,7 +108,7 @@ else:
     from networktables import NetworkTables
     NetworkTables.initialize(server=args.address)
     table = NetworkTables.getTable(args.table)
-	infotable = NetworkTables.getTable("info")
+    infotable = NetworkTables.getTable("info")
     time.sleep(.5)
 
     def fitness_to_width(fit):
