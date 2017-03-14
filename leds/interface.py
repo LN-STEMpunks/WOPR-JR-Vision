@@ -123,36 +123,26 @@ else:
         if _x < 0:
             return 0
         return MAX_WIDTH - 1.6 * MAX_WIDTH * (abs(2 * _x - camw) / camw)
-    lastTimeChanged = time.time()
-    goalTime = 0
-    pegTime = 0
-    lGoalTime = 1
-    lPegTime = 1
     while True:
         try:
-            goalTime = table.getSubtable("highgoal").getNumber("time")
-            pegTime = table.getSubtable("gearpeg").getNumber("time")
-            stable = table
+            #goalTime = table.getSubtable("highgoal").getNumber("time")
+            #pegTime = table.getSubtable("gearpeg").getNumber("time")
+            #stable = table
 
-            if goalTime != lGoalTime or pegTime != lPegTime:
-                lastTimeChanged = time.time()
-            
+            #if goalTime != lGoalTime or pegTime != lPegTime:
+            #    lastTimeChanged = time.time()
+            """
             lGoalTime = goalTime
             lPegTime = pegTime
 
-
-            if time.time() - lastTimeChanged > 4:
+"""
+            if table.getTable("gearpeg").getNumber("x") <= 0:
                 sendbytes(["21", getColorFromEnum(infotable.getNumber("color")), "10"])
 
             else:
-                if goalTime > pegTime:
-                    stable = table.getTable("highgoal")
-                else:
-                    stable = table.getTable("gearpeg")
-                
-                x = stable.getNumber("x")
-                cw = stable.getNumber("camwidth")
-                width = x_to_width(cw, x)
+                x = table.getTable("gearpeg").getNumber("x")
+                #cw = stable.getNumber("camwidth")
+                width = x_to_width(320, x)
                 #sendbytes(["18,0,255,0", str(int(width))])
                 sendbytes(["19", getColorFromEnum(infotable.getNumber("color"), "100,0,100", int(width))])
                 #sendbytes(["18", "0", "255", "0", str(int(width)), DELAY])

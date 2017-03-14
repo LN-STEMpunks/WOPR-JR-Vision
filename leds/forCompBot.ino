@@ -361,10 +361,14 @@ void _20_base(CRGB c0, CRGB c1, int off, int start, int stop) {
 } 
 
 void _ambiant_20() {
-  CRGB col0 = RGB_args(0, 1, 2);
-  CRGB col1 = RGB_args(3, 4, 5);
-  int delayv = args[6];
-  int fadev = args[7];
+  //CRGB col0 = RGB_args(0, 1, 2);
+  //CRGB col1 = RGB_args(3, 4, 5);
+  //int delayv = args[6];
+  //int fadev = args[7];
+  CRGB col0 = CRGB(50, 100, 50);
+  CRGB col1 = CRGB(0, 0, 255);
+  int delayv = 60;
+  int fadev = 240;
   if (function_runs == 0) {
     vars[0] = 0;
     vars[1] = 0;
@@ -372,7 +376,7 @@ void _ambiant_20() {
     vars[3] = 0;
   }
   _20_base(col0, col1, vars[0], 0, 20);
-  _20_base(col0, col1, vars[1], 39, 19);
+  _20_base(col0, col1, vars[1], 19, 40);
   _20_base(col0, col1, 2+vars[2], 61, 39);
   _20_base(col0, col1, 2+vars[3], 82, 60);
 
@@ -393,9 +397,9 @@ void _sin_base(CRGB col, int deg, int start, int stop) {
   CRGB ctw;
   while (i != stop) {
     int towrite = 255-(int)(255 * abs(x - (i - mid)) / (2.0*range));
-    towrite = (towrite * towrite) / 255;
-
+    //towrite = 255 * ((towrite * towrite) / (255)) / towrite;
     ctw = col;
+    towrite = scale8(towrite, towrite);
     ctw.r = scale8(ctw.r, towrite);
     ctw.g = scale8(ctw.g, towrite);
     ctw.b = scale8(ctw.b, towrite);
@@ -405,8 +409,10 @@ void _sin_base(CRGB col, int deg, int start, int stop) {
 }
 
 void _sin_21() {
-  CRGB col = RGB_args(0, 1, 2);
-  int delayv = args[3];
+  //CRGB col = RGB_args(0, 1, 2);
+  //int delayv = args[3];
+  CRGB col = CRGB(255, 0, 0);
+  int delayv = 1;
   if (function_runs == 0) {
     vars[0] = 0;
   }
@@ -418,7 +424,7 @@ void _sin_21() {
   vars[0] = (vars[0] + 1) % 360;
 
   FastLED.show();
-  delay(delayv);
+  //delay(delayv);
 }
 
 void _bubblesort_128() {
@@ -603,7 +609,7 @@ void readSerialData()
 void loop() {
 
   //Serial.println("Loop begin");
-  
+  /*
   if (isEthernet > 0)
   {
     parse_ethernet();
@@ -613,7 +619,8 @@ void loop() {
     readSerialData();
     parse_serial();
   }
-
+*/
+  func_id = 21;
   run_function();
 
   //FastLED.show();

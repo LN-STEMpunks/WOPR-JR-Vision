@@ -148,7 +148,7 @@ def get_image():
     global im
     global retval
     #retval, im = camera.read()
-    im, retval = cv2.imread(".tmp/%d.png" % (num)), 1
+    im, retval = cv2.imread(".pics/highgoal/%d.png" % (num)), 1
     num += 1
     while im is None or not retval:
         print retval
