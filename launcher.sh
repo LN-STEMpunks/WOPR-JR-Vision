@@ -5,8 +5,8 @@
 export VISIONREPO=/home/pi/WOPR-JR-Vision
 
 # Camera 0, and 1
-/usr/bin/env python ${VISIONREPO}/src/grip.py -c 0 -f ${VISIONREPO}/SMR-gearpeg.conf -mjpg 5800 --publish &
-/usr/bin/env python ${VISIONREPO}/src/grip.py -c 1 -f ${VISIONREPO}/SMR-highgoal.conf -mjpg 5801 --publish &
+/usr/bin/env python ${VISIONREPO}/src/grip.py -c 0 -f ${VISIONREPO}/SMR-gearpeg.conf -mjpg 5802 --publish &
+/usr/bin/env python ${VISIONREPO}/src/grip.py -c 1 -f ${VISIONREPO}/SMR-highgoal.conf -mjpg 5803 --publish &
 
 #Use this for serial connection to arduino UNO
 #/usr/bin/env python ${VISIONREPO}/leds/interface.py --serial /dev/ttyACM0 &
