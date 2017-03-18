@@ -41,10 +41,12 @@ parser.add_argument('-exposure', type=float, default=1.0, help='Exposure')
 parser.add_argument('-f', '--file', default="nothing.conf", help='config file')
 args = parser.parse_args()
 
-args.func = fitFuncs[args.func]
 
 # sets our preferences
 exec(open(args.file).read())
+
+args.func = fitFuncs[args.func]
+
 
 args.H = tuple(args.H)
 args.S = tuple(args.S)
