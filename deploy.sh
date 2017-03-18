@@ -34,12 +34,12 @@ if [ "$TARGET" == "" ]; then
     TARGET="pi@raspberrypi.local"
 fi
 HERECMD="scp -r $SOURCES $TARGET:~/ ${@:2}"
-EXECMD="cd ~; rm -rf WOPR-JR-Vision; tar xfv $TAR"
+EXECMD="tar xfv ~/$SOURCES"
 
 echo "Running here: $HERECMD"
 bash -c "$HERECMD" || echo "Failed"
 
 echo "Running on raspi: $EXECMD"
-ssh $TARGET '$EXECMD' || echo "Failed"
+ssh $TARGET "$EXECMD" || echo "Failed"
 
 

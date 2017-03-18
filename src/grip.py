@@ -14,6 +14,11 @@ import fits
 
 import argparse
 
+fitFuncs = {
+    "gear": fits.bestPegFit,
+    "goal": fits.bestGoalFit
+}
+
 parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
 parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
 parser.add_argument('-mjpg', '--mjpg', default=None, type=int, help='do mjpg stream on what port')
@@ -22,7 +27,8 @@ parser.add_argument('-ni', '--noinfo', action='store_true', help='dont print the
 parser.add_argument('-p', '--publish', action='store_true', help='publish to networktables')
 parser.add_argument('-ip', '--address', type=str, default="roboRIO-3966-frc.local", help='network tables address')
 parser.add_argument('-did', '--dashboardid', type=str, default="Center of ", help='smart dashboard publish ID')
-parser.add_argument('-t', '--table', type=str, default="vision", help='smart dashboard publish ID')
+parser.add_argument('-t', '--table', type=str, default="vision/gearpeg", help='smart dashboard publish ID')
+parser.add_argument('-func', '--func', type=str, default="gear", help='smart dashboard publish ID')
 
 parser.add_argument('-s', '--size', type=int, nargs=2, default=(320, 240), help='camera size')
 
@@ -34,6 +40,8 @@ parser.add_argument('-exposure', type=float, default=1.0, help='Exposure')
 
 parser.add_argument('-f', '--file', default="nothing.conf", help='config file')
 args = parser.parse_args()
+
+args.func = fitFuncs[args.func]
 
 # sets our preferences
 exec(open(args.file).read())
@@ -95,7 +103,7 @@ def init_camera():
 
     camera.set(3, args.size[0])
     camera.set(4, args.size[1])
-
+#python src/grip.py -H 40 130 -S 40 255 -L 0 255 -blur 4 4 -exposure 100 -mjpg 8002 -c 1
 num = 0
 def get_image():
     global num
@@ -133,25 +141,30 @@ while True:
 
     if args.show or args.mjpg:
         fdraw.im = im
-        fdraw.axis(args.size)
 
     try:
         if len(contours) >= 2:
             contours = [j for j in largestContours(contours, 4)]
             
-            contours, fitness = fits.bestPegFit(contours, args.size)
+            #contours, fitness = fits.bestPegFit(contours, args.size)
+            contours, fitness = args.func(contours, args.size)
 
-            center = P(0, 0)
-            for j in contours:
-                center = center + fits.contourCenter(j)
-            
-            center = (center / len(contours)).ints()
-            
+            if fitness < 10000:
+                center = P(0, 0)
+                for j in contours:
+                    center = center + fits.contourCenter(j)
+                
+                center = (center / len(contours)).ints()
+                
 
-            if args.show or args.mjpg:
-                fdraw.contours(contours)
-                fdraw.reticle(center, args.size)
-                fdraw.powers(center, args.size)
+                if args.show or args.mjpg:
+                    fdraw.contours(contours)
+                    fdraw.powers(center, args.size)
+                    fdraw.reticle(center, args.size)
+
+        if args.show or args.mjpg:
+            fdraw.axis(args.size)
+
     except Exception as e:
         print str(e)
     
@@ -168,24 +181,24 @@ while True:
     if args.show: cv2.imshow('img', im)
 
     if args.publish:
-        stable = table.getSubTable(targetName)
-        if not sd.putString(args.dashboardid + targetName, str(center)):
-		    sd.delete(args.dashboardid)
-		    print ("Couldn't publish to smart dashboard\n")
+        #table = table.getSubTable(targetName)
+        #if not sd.putString(args.dashboardid + targetName, str(center)):
+		#    sd.delete(args.dashboardid)
+		#    print ("Couldn't publish to smart dashboard\n")
 					
         worked = True
-        worked = worked and stable.putNumber("fitness", fitness)
+        worked = worked and table.putNumber("fitness", fitness)
 
-        worked = worked and stable.putNumber("x", center[0])
-        worked = worked and stable.putNumber("y", center[1])
+        worked = worked and table.putNumber("x", center.tuple()[0])
+        worked = worked and table.putNumber("y", center.tuple()[1])
         
-        worked = worked and stable.putNumber("fps", fps)
+        worked = worked and table.putNumber("fps", fps)
 
-        worked = worked and stable.putNumber("camfps", camfps)
-        worked = worked and stable.putNumber("camwidth", args.size[0])
-        worked = worked and stable.putNumber("camheight", args.size[1])
+        worked = worked and table.putNumber("camfps", camfps)
+        worked = worked and table.putNumber("camwidth", args.size[0])
+        worked = worked and table.putNumber("camheight", args.size[1])
 
-        worked = worked and stable.putNumber("time", time.time())
+        worked = worked and table.putNumber("time", time.time())
 
         if not worked:
             print ("Error while writing to table\n")
