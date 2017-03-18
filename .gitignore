@@ -8,17 +8,16 @@
 ###
 
 .DS_Store
-./*.png
-./*.jp[e]g
-./*.tiff
-.pics/
+*.png
+*.jp[e]g
+*.tiff
 
 !./images/*
 
 # cpp executables
 *.out
 *.o
-
+*.pyc
 
 # compressed
 *.tar*

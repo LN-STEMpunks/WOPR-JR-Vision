@@ -6,12 +6,8 @@ if [ "$UID" -ne "0" ]; then
     exit $?
 fi
 
-apt install libopencv-dev
-apt install python-opencv
-apt install v4l-utils
-#apt install python-pip
-#pip install flask
+apt install libopencv-dev python-opencv v4l-utils python-imaging
 
-# todo test
-yum install numpy "opencv*"
+# todo test for redhat/fedora systems
+# yum install numpy "opencv*"
 
