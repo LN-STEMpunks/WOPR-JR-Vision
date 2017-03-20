@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description='WOPR-JR LED interface')
 parser.add_argument('-b', '--bytes', type=str, nargs='*', default=[], help='bytes to send')
 parser.add_argument('-ip', '--address', type=str, default="roboRIO-3966-frc.local", help='network tables address')
 parser.add_argument('-aip', '--arduinoaddress', type=str, default="10.39.66.177:5800", help='arduino address')
-parser.add_argument('-t', '--table', type=str, default="vision", help='networktables table')
+#parser.add_argument('-t', '--table', type=str, default="vision/gearpeg", help='networktables table')
 parser.add_argument('-n', '--numbytes', type=int, default=(4 * 3 + 4), help='number of bytes expected')
 parser.add_argument('-s', '--serial', type=str, help='serial port to arduino')
 parser.add_argument('-baud', '--baud', type=int, default=38400, help='serial baud')
@@ -45,6 +45,7 @@ def connect():
         s = serial.Serial(args.serial, args.baud, timeout=1)
         #give the arduino time to wake up
         time.sleep(2)
+        #print s.readline()
     else :
         print "connecting ethernet"
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -53,16 +54,17 @@ def connect():
 def close():
     if s :
         s.close()
-        
-while s is None:
-    try:
-        connect()
-    except Exception as e: 
-        print str(e)
-        print 'exception in opening, waiting for retry'
-        close()
-        s = None
-        time.sleep(1.0)
+
+# don't need to connect yet, sendbytes will connect when needed  
+# while s is None:
+#     try:
+#         connect()
+#     except Exception as e: 
+#         print str(e)
+#         print 'exception in opening, waiting for retry'
+#         close()
+#         s = None
+#         time.sleep(1.0)
 
 CYLON_FUNC_ID = "17"
 COLOR_BAR = "0,255,0"
@@ -82,6 +84,7 @@ def sendbytes(byte_send):
             byte_send = "A" + byte_send
         if byte_send.endswith("Z") == False:
             byte_send = byte_send + "Z"
+        print ("Sending: " + byte_send)
         s.write(byte_send)
         # we call readline() because arduino seems to overrun its buffer if you don't read from it sometimes
         s.readline()
@@ -97,7 +100,10 @@ def sendbytes(byte_send):
             #print ("ERROR: you entered less bytes than expected (expected {0}, got {1})".format(NUM_ARGS, len(byte_send)))
             byte_send = byte_send + [0] * (NUM_ARGS - len(byte_send))
 
+        connect()
+        print ("Sending"+ str(byte_send))
         s.send(bytearray(byte_send))
+        close()
     return bytearray(byte_send)
 
 if len(args.bytes) > 0:
@@ -107,9 +113,11 @@ if len(args.bytes) > 0:
 else:
     from networktables import NetworkTables
     NetworkTables.initialize(server=args.address)
-    table = NetworkTables.getTable(args.table)
-    infotable = NetworkTables.getTable("info")
+    geartable = NetworkTables.getTable("vision/gearpeg")
+    goaltable = NetworkTables.getTable("vision/highgoal")
     time.sleep(.5)
+
+    lastBytes = []
 
     def fitness_to_width(fit):
         if fit <= MAX_WIDTH:
@@ -136,23 +144,36 @@ else:
             lPegTime = pegTime
 
 """
-            if table.getTable("gearpeg").getNumber("x") <= 0:
-                sendbytes(["21", getColorFromEnum(infotable.getNumber("color")), "10"])
-
+            gearx = geartable.getNumber("x", -2)
+            goalx = goaltable.getNumber("x", -2)
+            if gearx >= 0:
+                width = x_to_width(320, gearx)
+                # toSend = ["19", "0,255,0", "100,100,0", str(int(width))]
+                #toSend = ["19", "255,255,0", "0,0,100", str(int(width))]
+                toSend = ["19", "255,0,255", "0,0,100", str(int(width))]
+            elif goalx >= 0:
+                width = x_to_width(320, goalx)
+                # toSend = ["19", "0,0,255", "100,100,0", str(int(width))]
+                toSend = ["19", "255,255,0", "0,0,150", str(int(width))]
             else:
-                x = table.getTable("gearpeg").getNumber("x")
-                #cw = stable.getNumber("camwidth")
-                width = x_to_width(320, x)
-                #sendbytes(["18,0,255,0", str(int(width))])
-                sendbytes(["19", getColorFromEnum(infotable.getNumber("color"), "100,0,100", int(width))])
-                #sendbytes(["18", "0", "255", "0", str(int(width)), DELAY])
+                # default pattern
+                # toSend = ["17,100,0,0,0,100,0,10,100,1"]
+                toSend = ["21,100,0,0,0,100,0,10,100,1"]
+            
+            # only send if something changed
+            if lastBytes != toSend:
+                sendbytes(toSend)
+                lastBytes = toSend
+
             if args.serial:
                 time.sleep(0.001)
             else:
-                close()
-                connect()
-        except:
-            close()
+                #close()
+                time.sleep(.02)
+                #connect()
+        except Exception as e: 
+            print str(e)
+            #close()
             time.sleep(.25)
-            connect()
-        time.sleep(.1)
+            #connect()
+        #time.sleep(.1)
