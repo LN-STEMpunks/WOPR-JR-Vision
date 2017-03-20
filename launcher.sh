@@ -12,7 +12,7 @@ export VISIONREPO=/home/pi/WOPR-JR-Vision
 #/usr/bin/env python ${VISIONREPO}/leds/interface.py --serial /dev/ttyACM0 &
 
 #Use this for ethernet connection to arduino Ethernet
-#/usr/bin/env python ${VISIONREPO}/leds/interface.py &
+/usr/bin/env python ${VISIONREPO}/leds/interface.py &
 
 /usr/bin/env python ${VISIONREPO}/src/lidar.py --publish &
 
