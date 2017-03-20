@@ -35,8 +35,8 @@ SECTION|LENGTH
 byte mac[] = { 
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };  
 //the IP address for the shield:
-byte ip[] = { 
-  10, 39, 66, 177 };    
+byte ip[] = {    
+  10, 39, 66, 177 };   
 // the router's gateway address:
 byte gateway[] = { 
   10, 0, 0, 1 };
@@ -521,10 +521,10 @@ void parse_serial()
 void parse_ethernet()
 {
   EthernetClient client = server.available();
-  if (client == true ) {
+ // if (client == true ) {
     int bytesAvail = client.available();
-    Serial.print(bytesAvail);
-    Serial.println(" Bytes available");
+   // Serial.print(bytesAvail);
+   // Serial.println(" Bytes available");
 
     while(client.connected()){
 
@@ -548,7 +548,7 @@ void parse_ethernet()
     }
 
 
-  }
+  //}
 }
 
 String getValue(String data, char separator, int index)
@@ -609,7 +609,7 @@ void readSerialData()
 void loop() {
 
   //Serial.println("Loop begin");
-  /*
+  
   if (isEthernet > 0)
   {
     parse_ethernet();
@@ -619,8 +619,7 @@ void loop() {
     readSerialData();
     parse_serial();
   }
-*/
-  func_id = 21;
+
   run_function();
 
   //FastLED.show();
