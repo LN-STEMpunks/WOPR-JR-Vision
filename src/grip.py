@@ -20,8 +20,9 @@ fitFuncs = {
 }
 
 parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
-parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
 parser.add_argument('-mjpg', '--mjpg', default=None, type=int, help='do mjpg stream on what port')
+parser.add_argument('-d', '--dir', type=int, default="./pics/", help='directory to store images')
+parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
 parser.add_argument('-show', '--show', action='store_true', help='show processed image')
 parser.add_argument('-ni', '--noinfo', action='store_true', help='dont print the normal info')
 parser.add_argument('-p', '--publish', action='store_true', help='publish to networktables')
@@ -65,7 +66,7 @@ if args.publish:
 
 if args.mjpg:
     import stream
-    stream.main("-c -1 -p {0}".format(args.mjpg).split())
+    stream.main("-c -1 -p {0} -d {1}".format(args.mjpg, args.dir).split())
 
 def largestContours(contours, num=2):
     def keyFunc(contour):
