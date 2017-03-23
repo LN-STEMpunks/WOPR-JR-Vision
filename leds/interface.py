@@ -5,6 +5,7 @@ import serial
 import time
 import argparse
 
+
 parser = argparse.ArgumentParser(description='WOPR-JR LED interface')
 
 
@@ -150,11 +151,11 @@ else:
                 width = x_to_width(320, gearx)
                 # toSend = ["19", "0,255,0", "100,100,0", str(int(width))]
                 #toSend = ["19", "255,255,0", "0,0,100", str(int(width))]
-                toSend = ["19", "255,0,255", "0,0,100", str(int(width))]
+                toSend = ["19", "0,0,100", "255,0,255", str(int(width))]
             elif goalx >= 0:
                 width = x_to_width(320, goalx)
                 # toSend = ["19", "0,0,255", "100,100,0", str(int(width))]
-                toSend = ["19", "255,255,0", "0,0,150", str(int(width))]
+                toSend = ["19", "0,0,150", "255,255,0", str(int(width))]
             else:
                 # default pattern
                 # toSend = ["17,100,0,0,0,100,0,10,100,1"]

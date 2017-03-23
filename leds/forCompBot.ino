@@ -323,7 +323,8 @@ void _height_base(int offset, int len, int percent, CRGB pos, CRGB neg) {
       }
     }
   } else if (len < 0) {
-    for (int i = offset - len - 1; i >= offset; i--) {
+    int sv = offset - len - 1;
+    for (int i = sv; i >= offset; i--) {
       if (i > (offset - len - 1) + (len*percent)/100.0) {
         leds[i] = pos;
       } else {
@@ -340,9 +341,9 @@ void _height_19() {
   int percent = args[6];
   
   _height_base(0, 20, percent, colorPos, colorNeg);
-  _height_base(20, -20, percent, colorPos, colorNeg);
-  _height_base(40, -22, percent, colorPos, colorNeg);
-  _height_base(62, -22, percent, colorPos, colorNeg);
+  _height_base(19, -20, percent, colorPos, colorNeg);
+  _height_base(38, -20, percent, colorPos, colorNeg);
+  _height_base(59, -22, percent, colorPos, colorNeg);
 
   FastLED.show();
 }

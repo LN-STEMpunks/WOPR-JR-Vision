@@ -15,6 +15,8 @@ def bestGoalFit(contours, size):
     min_indexes = (-1, -1)
     min_fitness = float('inf')
     def fitness(c1, c2, a1, a2):
+        if a1 < 40 or a2 < 40:
+            return float('inf')
         fromcenter = abs((2.0*c1[0]-size[0])/size[0])**2 + abs((2.0*c2[0]-size[0])/size[0])**2
 
         diff = (P(*c1)-c2).tuple()
@@ -57,6 +59,8 @@ def bestPegFit(contours, size):
     min_indexes = (-1, -1)
     min_fitness = float('inf')
     def fitness(c1, c2, a1, a2):
+        if a1 < 40 or a2 < 40:
+            return float('inf')
         fromcenter = abs((2.0*c1[1]-size[1])/size[1])**2 + abs((2.0*c2[1]-size[1])/size[1])**2
 
         diff = (P(*c1)-c2).tuple()

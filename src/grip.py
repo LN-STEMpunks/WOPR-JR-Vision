@@ -21,7 +21,7 @@ fitFuncs = {
 
 parser = argparse.ArgumentParser(description='WOPR-JR Vision processing')
 parser.add_argument('-mjpg', '--mjpg', default=None, type=int, help='do mjpg stream on what port')
-parser.add_argument('-d', '--dir', type=int, default="./pics/", help='directory to store images')
+parser.add_argument('-d', '--dir', default="./pics/", help='directory to store images')
 parser.add_argument('-c', '--camera', type=int, default=0, help='camera port')
 parser.add_argument('-show', '--show', action='store_true', help='show processed image')
 parser.add_argument('-ni', '--noinfo', action='store_true', help='dont print the normal info')
