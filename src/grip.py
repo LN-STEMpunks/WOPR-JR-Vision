@@ -113,12 +113,13 @@ def get_image():
     global im
     global retval
     retval, im = camera.read()
-    #im, retval = cv2.imread(".pics/highgoal/%d.png" % (num)), 1
-    num += 1
+    #im, retval = cv2.imread("/home/dev/Pictures/gearpeg/%d.png" % (num)), 1
+    #time.sleep(.1)
     while im is None or not retval:
         time.sleep(.2)
         init_camera()
         retval, im = camera.read()
+    num += 1
     return im
 
 init_camera()
